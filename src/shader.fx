@@ -1,7 +1,7 @@
 // -----------------------------------------------------------------------------
-// Define the constant buffers.
+// Constant Buffers
 // -----------------------------------------------------------------------------
-cbuffer VSBuffer : register(b0)         // Register the constant buffer on slot 0
+cbuffer VSBuffer : register(b0)
 {
     float4x4 WorldMatrix;
 };
@@ -12,7 +12,7 @@ cbuffer VSBuffer : register(b1)
 }
 
 // -----------------------------------------------------------------------------
-// Define input and output data of the vertex shader.
+// Data Types of Shaders
 // -----------------------------------------------------------------------------
 struct VSInput
 {
@@ -27,13 +27,11 @@ struct PSInput
 // -----------------------------------------------------------------------------
 // Vertex Shader
 // -----------------------------------------------------------------------------
-PSInput VSShader(VSInput input)
+PSInput VShader(VSInput input)
 {
-    float4 WSPosition;
-
     PSInput result    = (PSInput) 0;
 
-    worldSpacePosition = mul(float4(input.position, 1.0f), WorldMatrix);
+    float4 worldSpacePosition = mul(float4(input.position, 1.0f), WorldMatrix);
     result.position = mul(worldSpacePosition, ViewProjectionMatrix);
 
     return result;
@@ -42,7 +40,7 @@ PSInput VSShader(VSInput input)
 // -----------------------------------------------------------------------------
 // Pixel Shader
 // -----------------------------------------------------------------------------
-float4 PSShader(PSInput _Input) : SV_Target
+float4 PShader(PSInput _Input) : SV_Target
 {
     return 1.0f;
 }

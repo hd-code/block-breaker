@@ -5,33 +5,6 @@
 
 using namespace gfx;
 
-// -----------------------------------------------------------------------------
-// Defines a constant buffer on the CPU. Note that this struct matches exactly
-// the 'VSBuffer' in the 'simple.fx' file. For easy communication between CPU
-// and GPU it is always a good idea to rebuild the GPU struct on the CPU side.
-// Node that the size of a constant buffer on bytes has to be a multiple of 16.
-// For example the following is not possible:
-// 
-//     struct SVertexBuffer
-//     {
-//         float m_ViewProjectionMatrix[16];
-//         float m_WorldMatrix[16];
-//         float m_Scalar;
-//     };
-//
-// The problem is the final member 'm_Scalar'. The two matrices at the begin
-// require 2 * 16 * 4 = 128 bytes, which is dividable by 16. Adding the four
-// bytes of 'm_Scalar' results in 132 bytes, which cannot be divided by 16.
-// Instead you have to use a 4D vector, even if that implies a waste of memory.
-// 
-//     struct SVertexBuffer
-//     {
-//         float m_ViewProjectionMatrix[16];
-//         float m_WorldMatrix[16];
-//         float m_Vector[4];           => store 'm_Scalar' in the first component of the 4D vector and waste the other three ones.
-//     };
-//     
-// -----------------------------------------------------------------------------
 struct SVertexBuffer
 {
     float m_ViewProjectionMatrix[16];       // Result of view matrix * projection matrix.
