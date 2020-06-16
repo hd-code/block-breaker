@@ -21,7 +21,8 @@ git clone https://github.com/hd-code/block-breaker.git
 # in das Verzeichnis des Projektes wechseln
 cd block-breaker
 
-# Git-Server der FH als remote hinzufügen
+# beide Git-Server als remote hinzufügen
+git remote set-url --add --push origin https://github.com/hd-code/block-breaker.git
 git remote set-url --add --push origin https://source.ai.fh-erfurt.de/ha9384dr/block-breaker.git
 
 # Überprüfen ob es geklappt hat

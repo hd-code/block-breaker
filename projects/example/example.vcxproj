@@ -11,7 +11,13 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="post_effect.cpp" />
+    <ClCompile Include="..\..\src\app.cpp" />
+    <ClCompile Include="..\..\src\main.cpp" />
+    <ClCompile Include="..\..\src\meshes.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\src\app.hpp" />
+    <ClInclude Include="..\..\src\meshes.hpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{2226DB5F-4E89-48C0-8A1F-6F90641D0437}</ProjectGuid>
