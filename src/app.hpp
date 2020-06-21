@@ -23,6 +23,8 @@ class CApplication : public gfx::IApplication {
 
         // Meshes
         gfx::BHandle TriangleMesh;
+        gfx::BHandle CubeMesh;
+        gfx::BHandle SphereMesh;
 
     private:
         virtual bool InternOnCreateTextures();

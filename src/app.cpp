@@ -12,6 +12,8 @@ CApplication::CApplication()
     , PixelShader(nullptr)
     , Material(nullptr)
     , TriangleMesh(nullptr)
+    , CubeMesh(nullptr)
+    , SphereMesh(nullptr)
 {}
 
 // -----------------------------------------------------------------------------
@@ -87,9 +89,13 @@ bool CApplication::InternOnCreateMaterials() {
     materialInfo.m_pVertexShader = this->VertexShader;
     materialInfo.m_pPixelShader  = this->PixelShader;
 
-    materialInfo.m_NumberOfInputElements = 1;
+    materialInfo.m_NumberOfInputElements = 3;
     materialInfo.m_InputElements[0].m_pName = "POSITION";
     materialInfo.m_InputElements[0].m_Type  = gfx::SInputElement::Float3;
+    materialInfo.m_InputElements[1].m_pName = "TEXCOORD";
+    materialInfo.m_InputElements[1].m_Type  = gfx::SInputElement::Float2;
+    materialInfo.m_InputElements[2].m_pName = "NORMAL";
+    materialInfo.m_InputElements[2].m_Type  = gfx::SInputElement::Float3;
 
     gfx::CreateMaterial(materialInfo, &this->Material);
 
@@ -107,8 +113,9 @@ bool CApplication::InternOnReleaseMaterials() {
 // -----------------------------------------------------------------------------
 
 bool CApplication::InternOnCreateMeshes() {
-    // CreateTriangleMesh(this->Material, &this->TriangleMesh);
-    CreateSphereMesh(this->Material, &this->TriangleMesh);
+    CreateTriangleMesh(this->Material, this->TriangleMesh);
+    CreateCubeMesh(this->Material, this->CubeMesh);
+    CreateSphereMesh(this->Material, this->SphereMesh);
 
     return true;
 }
@@ -117,6 +124,8 @@ bool CApplication::InternOnCreateMeshes() {
 
 bool CApplication::InternOnReleaseMeshes() {
     gfx::ReleaseMesh(this->TriangleMesh);
+    gfx::ReleaseMesh(this->CubeMesh);
+    gfx::ReleaseMesh(this->SphereMesh);
 
     return true;
 }
@@ -133,7 +142,6 @@ bool CApplication::InternOnResize(int _Width, int _Height) {
     gfx::GetViewMatrix(cameraPosition, cameraTarget, cameraUp, viewMatrix);
 
     float projectionMatrix[16];
-
     gfx::GetProjectionMatrix(
         this->m_FieldOfViewY,
         (float) _Width / (float) _Height,
@@ -141,17 +149,9 @@ bool CApplication::InternOnResize(int _Width, int _Height) {
     );
 
     float viewProjectionMatrix[16];
-
     gfx::MulMatrix(viewMatrix, projectionMatrix, viewProjectionMatrix);
-
     gfx::UploadConstantBuffer(viewProjectionMatrix, this->CB_VS_ViewProjectionMatrix);
 
-    return true;
-}
-
-// -----------------------------------------------------------------------------
-
-bool CApplication::InternOnUpdate() {
     return true;
 }
 
@@ -161,17 +161,21 @@ float angle = 0.0f;
 float angleStep = 1.0f;
 float maxAngle = 360.0f;
 
+bool CApplication::InternOnUpdate() {
+    angle += angleStep;
+    if (angle > maxAngle) angle = 0;
+
+    return true;
+}
+
+// -----------------------------------------------------------------------------
+
 bool CApplication::InternOnFrame() {
     float WorldMatrix[16];
-
     gfx::GetRotationXMatrix(angle, WorldMatrix);
-
     gfx::UploadConstantBuffer(WorldMatrix, this->CB_VS_WorldMatrix);
 
     gfx::DrawMesh(this->TriangleMesh);
-
-    angle += angleStep;
-    if (angle > maxAngle) angle = 0;
 
     return true;
 }

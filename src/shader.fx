@@ -17,6 +17,8 @@ cbuffer VSBuffer : register(b1)
 struct VSInput
 {
     float3 position : POSITION;
+    float2 texture : TEXCOORD;
+    float3 normal : NORMAL;
 };
 
 struct PSInput
