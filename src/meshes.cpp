@@ -54,13 +54,29 @@ void getFloatArrays(size_t n, SVertex vertices[], float result[][8]) {
 
 // -----------------------------------------------------------------------------
 
-void CreateTriangleMesh(gfx::BHandle &material, gfx::BHandle* mesh) {
+void CreateMesh(int numOfVerts, float *verts, int numOfInds, int *triangles, gfx::BHandle &material, gfx::BHandle &mesh) {
+    gfx::SMeshInfo meshInfo;
+
+    meshInfo.m_NumberOfVertices = numOfVerts;
+    meshInfo.m_pVertices = verts;
+
+    meshInfo.m_NumberOfIndices = numOfInds;
+    meshInfo.m_pIndices = triangles;
+    
+    meshInfo.m_pMaterial = material;
+
+    gfx::CreateMesh(meshInfo, &mesh);
+}
+
+// -----------------------------------------------------------------------------
+
+void CreateTriangleMesh(gfx::BHandle &material, gfx::BHandle &mesh) {
     float e = 0.5f;
 
     SVertex verts[] = {
-        {  0.0f, e, 0.0f, .5*texMax, texMin,  0.0f, 0.0f,-1.0f },
-        { -e, -e, 0.0f,   texMin, texMax,  0.0f, 0.0f,-1.0f  },
-        {  e, -e, 0.0f,   texMax, texMax,  0.0f, 0.0f,-1.0f  },
+        {  0.0f, e, 0.0f, .5*texMax, texMax,  0.0f, 0.0f,-1.0f },
+        { -e, -e, 0.0f,   texMin, texMin,  0.0f, 0.0f,-1.0f  },
+        {  e, -e, 0.0f,   texMax, texMin,  0.0f, 0.0f,-1.0f  },
     };
 
     float vertices[3][8];
@@ -70,17 +86,7 @@ void CreateTriangleMesh(gfx::BHandle &material, gfx::BHandle* mesh) {
         { 0, 1, 2 },
     };
 
-    gfx::SMeshInfo meshInfo;
-
-    meshInfo.m_NumberOfVertices = 3;
-    meshInfo.m_pVertices = &vertices[0][0];
-
-    meshInfo.m_NumberOfIndices = 3;
-    meshInfo.m_pIndices = &triangles[0][0];
-    
-    meshInfo.m_pMaterial = material;
-
-    gfx::CreateMesh(meshInfo, mesh);
+    CreateMesh(3, &vertices[0][0], 3, &triangles[0][0], material, mesh);
 }
 
 // -----------------------------------------------------------------------------
@@ -90,16 +96,19 @@ void CreateCubeMesh(gfx::BHandle &material, gfx::BHandle &mesh) {
     float e = 0.5f; // half-edge length
 
     SVertex verts[] = {
-        { -e, e,-e,  texMin, texMin },
-        {  e, e,-e,  texMax, texMin },
-        { -e,-e,-e,  texMin, texMax },
-        {  e,-e,-e,  texMax, texMax },
-        { -e, e, e,  texMax, texMin },
-        {  e, e, e,  texMin, texMin },
+        { -e,-e,-e,  texMin, texMin },
+        {  e,-e,-e,  texMax, texMin },
+        {  e, e,-e,  texMax, texMax },
+        { -e, e,-e,  texMin, texMax },
         { -e,-e, e,  texMax, texMax },
         {  e,-e, e,  texMin, texMax },
+        {  e, e, e,  texMin, texMin },
+        { -e, e, e,  texMax, texMin },
     };
     addNormals(8, verts);
+
+    float vertices[numOfVerts][8];
+    getFloatArrays(numOfVerts, verts, vertices);
 
     int triangles[][3] = {
         { 0, 2, 3 }, { 0, 3, 1 },
@@ -110,20 +119,7 @@ void CreateCubeMesh(gfx::BHandle &material, gfx::BHandle &mesh) {
         { 4, 5, 7 }, { 4, 7, 6 },
     };
 
-    float vertices[numOfVerts][8];
-    getFloatArrays(numOfVerts, verts, vertices);
-
-    gfx::SMeshInfo meshInfo;
-
-    meshInfo.m_NumberOfVertices = numOfVerts;
-    meshInfo.m_pVertices = &vertices[0][0];
-
-    meshInfo.m_NumberOfIndices = 12*3;
-    meshInfo.m_pIndices = &triangles[0][0];
-    
-    meshInfo.m_pMaterial = material;
-
-    gfx::CreateMesh(meshInfo, &mesh);
+    CreateMesh(numOfVerts, &vertices[0][0], 12*3, &triangles[0][0], material, mesh);
 }
 
 // -----------------------------------------------------------------------------
@@ -167,13 +163,5 @@ void CreateSphereMesh(gfx::BHandle &material, gfx::BHandle &mesh) {
     int triangles[N-2][3];
     triangulateCircle(N-2, triangles);
 
-    meshInfo.m_NumberOfVertices = N;
-    meshInfo.m_pVertices = &vertices[0][0];
-
-    meshInfo.m_NumberOfIndices = (N-2) * 3;
-    meshInfo.m_pIndices = &triangles[0][0];
-    
-    meshInfo.m_pMaterial = material;
-
-    gfx::CreateMesh(meshInfo, &mesh);
+    CreateMesh(N, &vertices[0][0], (N-2) * 3, &triangles[0][0], material, mesh);
 }

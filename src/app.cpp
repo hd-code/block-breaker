@@ -22,6 +22,22 @@ CApplication::~CApplication() {}
 
 // -----------------------------------------------------------------------------
 
+bool CApplication::InternOnStartup() {
+    return true;
+}
+
+void updateWorldMatrix(SEntity &entity) {
+    gfx::GetTranslationMatrix(entity.position.x, entity.position.y, entity.position.z, entity.worldMatrix);
+}
+
+// -----------------------------------------------------------------------------
+
+bool CApplication::InternOnShutdown() {
+    return true;
+}
+
+// -----------------------------------------------------------------------------
+
 bool CApplication::InternOnCreateTextures() {
     // -----------------------------------------------------------------------------
     // Path is "..\\data\\images\\texture.dds"

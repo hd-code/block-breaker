@@ -1,6 +1,16 @@
+#include <vector>
+
 #include "yoshix.h"
 
+#include "meshes.hpp"
+
 // -----------------------------------------------------------------------------
+
+struct SEntity {
+    gfx::BHandle mesh;
+    SVector3 position;
+    float worldMatrix[16];
+};
 
 class CApplication : public gfx::IApplication {
     public:
@@ -26,7 +36,13 @@ class CApplication : public gfx::IApplication {
         gfx::BHandle CubeMesh;
         gfx::BHandle SphereMesh;
 
+        // Entities
+        std::vector<SEntity> staticEntities;
+        std::vector<SEntity> dynamicEntities;
+
     private:
+        virtual bool InternOnStartup();
+        virtual bool InternOnShutdown();
         virtual bool InternOnCreateTextures();
         virtual bool InternOnReleaseTextures();
         virtual bool InternOnCreateConstantBuffers();

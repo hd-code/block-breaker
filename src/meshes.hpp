@@ -3,11 +3,11 @@
 // -----------------------------------------------------------------------------
 
 struct SVector3 {
-    int x, y, z;
+    float x, y, z;
 };
 
 struct SVector2 {
-    int u, v;
+    float u, v;
 };
 
 struct SVertex {
