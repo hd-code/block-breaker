@@ -1,20 +1,10 @@
-#include "yoshix.h"
+#pragma once
 
 // -----------------------------------------------------------------------------
 
-struct SVector3 {
-    float x, y, z;
-};
+#include "yoshix.h"
 
-struct SVector2 {
-    float u, v;
-};
-
-struct SVertex {
-    SVector3 position;
-    SVector2 texture;
-    SVector3 normal;
-};
+// -----------------------------------------------------------------------------
 
 void CreateTriangleMesh(gfx::BHandle &material, gfx::BHandle &mesh);
 

@@ -1,18 +1,19 @@
-#include <vector>
-
-#include "yoshix.h"
-
-#include "meshes.hpp"
+#pragma once
 
 // -----------------------------------------------------------------------------
 
-struct SEntity {
-    gfx::BHandle mesh;
-    SVector3 position;
-    float worldMatrix[16];
-};
+#include "entity.hpp"
+#include "meshes.hpp"
 
-class CApplication : public gfx::IApplication {
+#include "yoshix.h"
+
+#include <vector>
+
+using namespace gfx;
+
+// -----------------------------------------------------------------------------
+
+class CApplication : public IApplication {
     public:
         CApplication();
         virtual ~CApplication();
@@ -20,21 +21,24 @@ class CApplication : public gfx::IApplication {
     private:
         float m_FieldOfViewY;             // Vertical view angle of the camera
 
+        // Textures
+        BHandle Texture;
+
         // Constant Buffers
-        gfx::BHandle CB_VS_WorldMatrix;
-        gfx::BHandle CB_VS_ViewProjectionMatrix;
+        BHandle CB_VS_WorldMatrix;
+        BHandle CB_VS_ViewProjectionMatrix;
 
         // Shaders
-        gfx::BHandle VertexShader;
-        gfx::BHandle PixelShader;
+        BHandle VertexShader;
+        BHandle PixelShader;
 
         // Materials
-        gfx::BHandle Material;
+        BHandle Material;
 
         // Meshes
-        gfx::BHandle TriangleMesh;
-        gfx::BHandle CubeMesh;
-        gfx::BHandle SphereMesh;
+        BHandle TriangleMesh;
+        BHandle CubeMesh;
+        BHandle SphereMesh;
 
         // Entities
         std::vector<SEntity> staticEntities;

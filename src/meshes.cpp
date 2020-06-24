@@ -1,66 +1,26 @@
 #include "meshes.hpp"
 
-#define _USE_MATH_DEFINES
-#include <cmath>
-#include <iostream>
-
 #include "yoshix.h"
 
-// -----------------------------------------------------------------------------
-
-const float texMin = 0.0f;
-const float texMax = 1.0f;
-
-void normalizeVertex(SVertex &vertex) {
-    float normal[3] = { vertex.normal.x, vertex.normal.y, vertex.normal.z };
-    gfx::GetNormalizedVector(normal, normal);
-    vertex.normal.x = normal[0];
-    vertex.normal.y = normal[1];
-    vertex.normal.z = normal[2];
-}
-
-void normalizeVerts(size_t n, SVertex vertices[]) {
-    for (int i = 0; i < n; i++) {
-        normalizeVertex(vertices[i]);
-    }
-}
-
-void addNormal(SVertex &vertex) {
-    float normal[3] = { vertex.position.x, vertex.position.y, vertex.position.z };
-    gfx::GetNormalizedVector(normal, normal);
-    vertex.normal.x = normal[0];
-    vertex.normal.y = normal[1];
-    vertex.normal.z = normal[2];
-}
-
-void addNormals(size_t n, SVertex vertices[]) {
-    for (int i = 0; i < n; i++) {
-        addNormal(vertices[i]);
-    }
-}
-
-void getFloatArrays(size_t n, SVertex vertices[], float result[][8]) {
-    for (int i = 0; i < n; i++) {
-        result[i][0] = vertices[i].position.x;
-        result[i][1] = vertices[i].position.y;
-        result[i][2] = vertices[i].position.z;
-        result[i][3] = vertices[i].texture.u;
-        result[i][4] = vertices[i].texture.v;
-        result[i][5] = vertices[i].normal.x;
-        result[i][6] = vertices[i].normal.y;
-        result[i][7] = vertices[i].normal.z;
-    }
-}
+#define _USE_MATH_DEFINES
+#include <cmath>
 
 // -----------------------------------------------------------------------------
 
-void CreateMesh(int numOfVerts, float *verts, int numOfInds, int *triangles, gfx::BHandle &material, gfx::BHandle &mesh) {
+const float TEX_MIN = 0.0f;
+const float TEX_MAX = 1.0f;
+
+// -----------------------------------------------------------------------------
+
+const int INDICES_PER_TRIANGLE = 3;
+
+void CreateMesh(int numOfVertices, float *vertices, int numOfTriangles, int *triangles, gfx::BHandle &material, gfx::BHandle &mesh) {
     gfx::SMeshInfo meshInfo;
 
-    meshInfo.m_NumberOfVertices = numOfVerts;
-    meshInfo.m_pVertices = verts;
+    meshInfo.m_NumberOfVertices = numOfVertices;
+    meshInfo.m_pVertices = vertices;
 
-    meshInfo.m_NumberOfIndices = numOfInds;
+    meshInfo.m_NumberOfIndices = numOfTriangles * INDICES_PER_TRIANGLE;
     meshInfo.m_pIndices = triangles;
     
     meshInfo.m_pMaterial = material;
@@ -73,95 +33,146 @@ void CreateMesh(int numOfVerts, float *verts, int numOfInds, int *triangles, gfx
 void CreateTriangleMesh(gfx::BHandle &material, gfx::BHandle &mesh) {
     float e = 0.5f;
 
-    SVertex verts[] = {
-        {  0.0f, e, 0.0f, .5*texMax, texMax,  0.0f, 0.0f,-1.0f },
-        { -e, -e, 0.0f,   texMin, texMin,  0.0f, 0.0f,-1.0f  },
-        {  e, -e, 0.0f,   texMax, texMin,  0.0f, 0.0f,-1.0f  },
+    float vertices[][8] = {
+        {  0.0f, e, 0.0f, .5*TEX_MAX, TEX_MAX,  0.0f, 0.0f,-1.0f },
+        { -e, -e, 0.0f,   TEX_MIN, TEX_MIN,  0.0f, 0.0f,-1.0f  },
+        {  e, -e, 0.0f,   TEX_MAX, TEX_MIN,  0.0f, 0.0f,-1.0f  },
     };
-
-    float vertices[3][8];
-    getFloatArrays(3, verts, vertices);
 
     int triangles[][3] = {
         { 0, 1, 2 },
     };
 
-    CreateMesh(3, &vertices[0][0], 3, &triangles[0][0], material, mesh);
+    CreateMesh(3, &vertices[0][0], 1, &triangles[0][0], material, mesh);
 }
 
 // -----------------------------------------------------------------------------
 
 void CreateCubeMesh(gfx::BHandle &material, gfx::BHandle &mesh) {
-    int numOfVerts = 8;
     float e = 0.5f; // half-edge length
 
-    SVertex verts[] = {
-        { -e,-e,-e,  texMin, texMin },
-        {  e,-e,-e,  texMax, texMin },
-        {  e, e,-e,  texMax, texMax },
-        { -e, e,-e,  texMin, texMax },
-        { -e,-e, e,  texMax, texMax },
-        {  e,-e, e,  texMin, texMax },
-        {  e, e, e,  texMin, texMin },
-        { -e, e, e,  texMax, texMin },
+    float vertices[][8] = {
+        // front
+        { -e, e,-e,  TEX_MIN, TEX_MIN,  0.0f, 0.0f,-1.0f },
+        { -e,-e,-e,  TEX_MIN, TEX_MAX,  0.0f, 0.0f,-1.0f },
+        {  e,-e,-e,  TEX_MAX, TEX_MAX,  0.0f, 0.0f,-1.0f },
+        {  e, e,-e,  TEX_MAX, TEX_MIN,  0.0f, 0.0f,-1.0f },
+        // back
+        { -e,-e, e,  TEX_MIN, TEX_MIN,  0.0f, 0.0f, 1.0f },
+        { -e, e, e,  TEX_MIN, TEX_MAX,  0.0f, 0.0f, 1.0f },
+        {  e, e, e,  TEX_MAX, TEX_MAX,  0.0f, 0.0f, 1.0f },
+        {  e,-e, e,  TEX_MAX, TEX_MIN,  0.0f, 0.0f, 1.0f },
+        // top
+        { -e, e, e,  TEX_MIN, TEX_MIN,  0.0f, 1.0f, 0.0f },
+        { -e, e,-e,  TEX_MIN, TEX_MAX,  0.0f, 1.0f, 0.0f },
+        {  e, e,-e,  TEX_MAX, TEX_MAX,  0.0f, 1.0f, 0.0f },
+        {  e, e, e,  TEX_MAX, TEX_MIN,  0.0f, 1.0f, 0.0f },
+        // bottom
+        { -e,-e,-e,  TEX_MIN, TEX_MIN,  0.0f,-1.0f, 0.0f },
+        { -e,-e, e,  TEX_MIN, TEX_MAX,  0.0f,-1.0f, 0.0f },
+        {  e,-e, e,  TEX_MAX, TEX_MAX,  0.0f,-1.0f, 0.0f },
+        {  e,-e,-e,  TEX_MAX, TEX_MIN,  0.0f,-1.0f, 0.0f },
+        // right
+        {  e, e,-e,  TEX_MIN, TEX_MIN,  1.0f, 0.0f, 0.0f },
+        {  e,-e,-e,  TEX_MIN, TEX_MAX,  1.0f, 0.0f, 0.0f },
+        {  e,-e, e,  TEX_MAX, TEX_MAX,  1.0f, 0.0f, 0.0f },
+        {  e, e, e,  TEX_MAX, TEX_MIN,  1.0f, 0.0f, 0.0f },
+        // left
+        { -e, e, e,  TEX_MIN, TEX_MIN, -1.0f, 0.0f, 0.0f },
+        { -e,-e, e,  TEX_MIN, TEX_MAX, -1.0f, 0.0f, 0.0f },
+        { -e,-e,-e,  TEX_MAX, TEX_MAX, -1.0f, 0.0f, 0.0f },
+        { -e, e,-e,  TEX_MAX, TEX_MIN, -1.0f, 0.0f, 0.0f },
     };
-    addNormals(8, verts);
-
-    float vertices[numOfVerts][8];
-    getFloatArrays(numOfVerts, verts, vertices);
 
     int triangles[][3] = {
-        { 0, 2, 3 }, { 0, 3, 1 },
-        { 1, 3, 7 }, { 1, 7, 5 },
-        { 0, 2, 6 }, { 0, 6, 4 },
-        { 0, 1, 5 }, { 0, 5, 4 },
-        { 2, 6, 7 }, { 2, 7, 3 },
-        { 4, 5, 7 }, { 4, 7, 6 },
+        {  0, 1, 2 }, {  0, 2, 3 },
+        {  4, 5, 6 }, {  4, 6, 7 },
+        {  8, 9,10 }, {  8,10,11 },
+        { 12,13,14 }, { 12,14,15 },
+        { 16,17,18 }, { 16,18,19 },
+        { 20,21,22 }, { 20,22,23 },
     };
 
-    CreateMesh(numOfVerts, &vertices[0][0], 12*3, &triangles[0][0], material, mesh);
+    CreateMesh(24, &vertices[0][0], 12, &triangles[0][0], material, mesh);
 }
 
 // -----------------------------------------------------------------------------
 
-const float RADIUS = 1.0f;
-const float PI_2 = 2 * M_PI;
-const int N = 8;
+const float RADIUS = 1.0f; // radius of sphere
+const int N = 12; // number of vertical meridians
+const int M = 8; // number of equatorial meridians
 
-void makeCircleVertices(float radius, int n, float vertices[][3]) {
-    float stepSize = PI_2 / n;
-    float angle = 0;
+const float PI = float(M_PI);
 
-    for (int i = 0; i < n; i++) {
+void makeCircleVertices(float radius, float height, float texHeight, float vertices[N][8]) {
+    float texWidth = 0.0f;
+    float texWidthStep = 1.0f / (N-1);
+
+    float angle = 0.0f;
+    float angleStep = 2*PI / (N-1);
+
+    for (int i = 0; i < N; i++) {
         vertices[i][0] = cos(angle) * radius;
-        vertices[i][1] = 0.0f;
+        vertices[i][1] = height;
         vertices[i][2] = sin(angle) * radius;
 
-        std::cout << vertices[i][0] << " " << vertices[i][1] << " " << vertices[i][2] << std::endl;
+        vertices[i][3] = texWidth;
+        vertices[i][4] = texHeight;
 
-        angle += stepSize;
+        texWidth += texWidthStep;
+        angle += angleStep;
     }
 }
 
-void triangulateCircle(int n, int triangles[][3]) {
-    // connecting all vertices between start and end
-    for (int i = 0; i < n; i++) {
-        triangles[i][0] = 0;
-        triangles[i][1] = i+1;
-        triangles[i][2] = i+2;
+void makeSphereVertices(float vertices[][8]) {
+    float angle = PI / 2.0f;
+    float angleStep = PI / (M-1);
 
-        std::cout << triangles[i][0] << " " << triangles[i][1] << " " << triangles[i][2] << std::endl;
+    float texHeight = 0.0f;
+    float texHeightStep = 1.0f / (M-1);
+
+    for (int i = 0; i < M; i++) {
+        makeCircleVertices(cos(angle)*RADIUS, sin(angle)*RADIUS, texHeight, &vertices[i*N]);
+
+        angle -= angleStep;
+        texHeight += texHeightStep;
+    }
+}
+
+void addNormalsFromPosition(float vertices[][8], size_t n) {
+    for (unsigned int i = 0; i < n; i++) {
+        float normal[3] = {vertices[i][0], vertices[i][1], vertices[i][2]};
+        gfx::GetNormalizedVector(normal, normal);
+        vertices[i][5] = normal[0];
+        vertices[i][6] = normal[1];
+        vertices[i][7] = normal[2];
+    }
+}
+
+void triangulateSphere(int triangles[][3]) {
+    int index = 0;
+    for (int row = 0; row < (M-1); row++) {
+        for (int i = 1; i < N; i++) {
+            triangles[index][0] = (row+1)*N + i - 1;
+            triangles[index][1] = (row+1)*N + i;
+            triangles[index][2] = row*N + i;
+            index++;
+            triangles[index][0] = (row+1)*N + i - 1;
+            triangles[index][1] = row*N + i;
+            triangles[index][2] = row*N + i - 1;
+            index++;
+        }
     }
 }
 
 void CreateSphereMesh(gfx::BHandle &material, gfx::BHandle &mesh) {
-    gfx::SMeshInfo meshInfo;
+    float vertices[N*M][8];
+    makeSphereVertices(vertices);
 
-    float vertices[N][3];
-    makeCircleVertices(RADIUS, N, vertices);
+    addNormalsFromPosition(vertices, N*M);
 
-    int triangles[N-2][3];
-    triangulateCircle(N-2, triangles);
+    int triangles[2*N*(M-1)][3];
+    triangulateSphere(triangles);
 
-    CreateMesh(N, &vertices[0][0], (N-2) * 3, &triangles[0][0], material, mesh);
+    CreateMesh(N*M, &vertices[0][0], 2*N*(M-1), &triangles[0][0], material, mesh);
 }

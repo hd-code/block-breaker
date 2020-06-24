@@ -1,11 +1,16 @@
 #include "app.hpp"
-
+#include "entity.hpp"
 #include "meshes.hpp"
+
+#include "yoshix.h"
+
+using namespace gfx;
 
 // -----------------------------------------------------------------------------
 
 CApplication::CApplication()
     : m_FieldOfViewY(60.0f)        // Set the vertical view angle of the camera to 60 degrees.
+    , Texture(nullptr)
     , CB_VS_WorldMatrix(nullptr)
     , CB_VS_ViewProjectionMatrix(nullptr)
     , VertexShader(nullptr)
@@ -16,21 +21,23 @@ CApplication::CApplication()
     , SphereMesh(nullptr)
 {}
 
-// -----------------------------------------------------------------------------
-
 CApplication::~CApplication() {}
 
 // -----------------------------------------------------------------------------
 
 bool CApplication::InternOnStartup() {
+    SEntity entities[3] = {
+        { &this->TriangleMesh, -3.0f, 0.0f, 0.0f },
+        { &this->SphereMesh, 0.0f, 0.0f, 0.0f },
+        { &this->CubeMesh, 3.0f, 0.0f, 0.0f },
+    };
+
+    for (int i = 0; i < 3; i++) {
+        this->dynamicEntities.push_back(entities[i]);
+    }
+
     return true;
 }
-
-void updateWorldMatrix(SEntity &entity) {
-    gfx::GetTranslationMatrix(entity.position.x, entity.position.y, entity.position.z, entity.worldMatrix);
-}
-
-// -----------------------------------------------------------------------------
 
 bool CApplication::InternOnShutdown() {
     return true;
@@ -42,12 +49,15 @@ bool CApplication::InternOnCreateTextures() {
     // -----------------------------------------------------------------------------
     // Path is "..\\data\\images\\texture.dds"
     // -----------------------------------------------------------------------------
+
+    CreateTexture("..\\data\\images\\earth.dds" , &this->Texture);
+
     return true;
 }
 
-// -----------------------------------------------------------------------------
-
 bool CApplication::InternOnReleaseTextures() {
+    ReleaseTexture(this->Texture);
+
     return true;
 }
 
@@ -56,17 +66,15 @@ bool CApplication::InternOnReleaseTextures() {
 bool CApplication::InternOnCreateConstantBuffers() {
     float dummy[16];
 
-    gfx::CreateConstantBuffer(sizeof(dummy), &this->CB_VS_WorldMatrix);
-    gfx::CreateConstantBuffer(sizeof(dummy), &this->CB_VS_ViewProjectionMatrix);
+    CreateConstantBuffer(sizeof(dummy), &this->CB_VS_WorldMatrix);
+    CreateConstantBuffer(sizeof(dummy), &this->CB_VS_ViewProjectionMatrix);
 
     return true; 
 }
 
-// -----------------------------------------------------------------------------
-
 bool CApplication::InternOnReleaseConstantBuffers() {
-    gfx::ReleaseConstantBuffer(this->CB_VS_WorldMatrix);
-    gfx::ReleaseConstantBuffer(this->CB_VS_ViewProjectionMatrix);
+    ReleaseConstantBuffer(this->CB_VS_WorldMatrix);
+    ReleaseConstantBuffer(this->CB_VS_ViewProjectionMatrix);
 
     return true;
 }
@@ -74,17 +82,15 @@ bool CApplication::InternOnReleaseConstantBuffers() {
 // -----------------------------------------------------------------------------
 
 bool CApplication::InternOnCreateShader() {
-    gfx::CreateVertexShader("..\\src\\shader.fx", "VShader", &this->VertexShader);
-    gfx::CreatePixelShader("..\\src\\shader.fx", "PShader", &this->PixelShader);
+    CreateVertexShader("..\\src\\shader.fx", "VShader", &this->VertexShader);
+    CreatePixelShader("..\\src\\shader.fx", "PShader", &this->PixelShader);
 
     return true;
 }
 
-// -----------------------------------------------------------------------------
-
 bool CApplication::InternOnReleaseShader() {
-    gfx::ReleaseVertexShader(this->VertexShader);
-    gfx::ReleasePixelShader(this->PixelShader);
+    ReleaseVertexShader(this->VertexShader);
+    ReleasePixelShader(this->PixelShader);
 
     return true;
 }
@@ -92,9 +98,10 @@ bool CApplication::InternOnReleaseShader() {
 // -----------------------------------------------------------------------------
 
 bool CApplication::InternOnCreateMaterials() {
-    gfx::SMaterialInfo materialInfo;
+    SMaterialInfo materialInfo;
 
-    materialInfo.m_NumberOfTextures = 0;
+    materialInfo.m_NumberOfTextures = 1;
+    materialInfo.m_pTextures[0] = this->Texture;
 
     materialInfo.m_NumberOfVertexConstantBuffers = 2;
     materialInfo.m_pVertexConstantBuffers[0] = this->CB_VS_WorldMatrix;
@@ -107,21 +114,19 @@ bool CApplication::InternOnCreateMaterials() {
 
     materialInfo.m_NumberOfInputElements = 3;
     materialInfo.m_InputElements[0].m_pName = "POSITION";
-    materialInfo.m_InputElements[0].m_Type  = gfx::SInputElement::Float3;
+    materialInfo.m_InputElements[0].m_Type  = SInputElement::Float3;
     materialInfo.m_InputElements[1].m_pName = "TEXCOORD";
-    materialInfo.m_InputElements[1].m_Type  = gfx::SInputElement::Float2;
+    materialInfo.m_InputElements[1].m_Type  = SInputElement::Float2;
     materialInfo.m_InputElements[2].m_pName = "NORMAL";
-    materialInfo.m_InputElements[2].m_Type  = gfx::SInputElement::Float3;
+    materialInfo.m_InputElements[2].m_Type  = SInputElement::Float3;
 
-    gfx::CreateMaterial(materialInfo, &this->Material);
+    CreateMaterial(materialInfo, &this->Material);
 
     return true;
 }
 
-// -----------------------------------------------------------------------------
-
 bool CApplication::InternOnReleaseMaterials() {
-    gfx::ReleaseMaterial(this->Material);
+    ReleaseMaterial(this->Material);
 
     return true;
 }
@@ -136,12 +141,10 @@ bool CApplication::InternOnCreateMeshes() {
     return true;
 }
 
-// -----------------------------------------------------------------------------
-
 bool CApplication::InternOnReleaseMeshes() {
-    gfx::ReleaseMesh(this->TriangleMesh);
-    gfx::ReleaseMesh(this->CubeMesh);
-    gfx::ReleaseMesh(this->SphereMesh);
+    ReleaseMesh(this->TriangleMesh);
+    ReleaseMesh(this->CubeMesh);
+    ReleaseMesh(this->SphereMesh);
 
     return true;
 }
@@ -155,18 +158,18 @@ bool CApplication::InternOnResize(int _Width, int _Height) {
     float cameraTarget[3] = { 0.0f, 0.0f, 0.0f };
     float cameraUp[3] = { 0.0f, 1.0f, 0.0f };
 
-    gfx::GetViewMatrix(cameraPosition, cameraTarget, cameraUp, viewMatrix);
+    GetViewMatrix(cameraPosition, cameraTarget, cameraUp, viewMatrix);
 
     float projectionMatrix[16];
-    gfx::GetProjectionMatrix(
+    GetProjectionMatrix(
         this->m_FieldOfViewY,
         (float) _Width / (float) _Height,
         0.1f, 100.0f, projectionMatrix
     );
 
     float viewProjectionMatrix[16];
-    gfx::MulMatrix(viewMatrix, projectionMatrix, viewProjectionMatrix);
-    gfx::UploadConstantBuffer(viewProjectionMatrix, this->CB_VS_ViewProjectionMatrix);
+    MulMatrix(viewMatrix, projectionMatrix, viewProjectionMatrix);
+    UploadConstantBuffer(viewProjectionMatrix, this->CB_VS_ViewProjectionMatrix);
 
     return true;
 }
@@ -174,7 +177,7 @@ bool CApplication::InternOnResize(int _Width, int _Height) {
 // -----------------------------------------------------------------------------
 
 float angle = 0.0f;
-float angleStep = 1.0f;
+float angleStep = 1.1f;
 float maxAngle = 360.0f;
 
 bool CApplication::InternOnUpdate() {
@@ -187,11 +190,24 @@ bool CApplication::InternOnUpdate() {
 // -----------------------------------------------------------------------------
 
 bool CApplication::InternOnFrame() {
-    float WorldMatrix[16];
-    gfx::GetRotationXMatrix(angle, WorldMatrix);
-    gfx::UploadConstantBuffer(WorldMatrix, this->CB_VS_WorldMatrix);
+    float RotationXMatrix[16];
+    float RotationYMatrix[16];
 
-    gfx::DrawMesh(this->TriangleMesh);
+    float WorldMatrix[16];
+
+    for (auto &entity : this->dynamicEntities) {
+        updateWorldMatrix(entity);
+
+        GetRotationXMatrix(angle, RotationXMatrix);
+        GetRotationYMatrix(angle * 0.9f, RotationYMatrix);
+
+        MulMatrix(RotationXMatrix, RotationYMatrix, WorldMatrix);
+        MulMatrix(WorldMatrix, entity.worldMatrix, WorldMatrix);
+
+        UploadConstantBuffer(WorldMatrix, this->CB_VS_WorldMatrix);
+
+        DrawMesh(*entity.mesh);
+    }
 
     return true;
 }

@@ -12,11 +12,13 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\app.cpp" />
+    <ClCompile Include="..\..\src\entity.cpp" />
     <ClCompile Include="..\..\src\main.cpp" />
     <ClCompile Include="..\..\src\meshes.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\src\app.hpp" />
+    <ClInclude Include="..\..\src\entity.hpp" />
     <ClInclude Include="..\..\src\meshes.hpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">

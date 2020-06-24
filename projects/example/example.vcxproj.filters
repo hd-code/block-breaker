@@ -2,11 +2,13 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <ClCompile Include="..\..\src\app.cpp" />
-    <ClCompile Include="..\..\src\main.cpp" />
     <ClCompile Include="..\..\src\meshes.cpp" />
+    <ClCompile Include="..\..\src\main.cpp" />
+    <ClCompile Include="..\..\src\entity.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\src\app.hpp" />
     <ClInclude Include="..\..\src\meshes.hpp" />
+    <ClInclude Include="..\..\src\entity.hpp" />
   </ItemGroup>
 </Project>
