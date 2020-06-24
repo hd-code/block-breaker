@@ -46,11 +46,7 @@ bool CApplication::InternOnShutdown() {
 // -----------------------------------------------------------------------------
 
 bool CApplication::InternOnCreateTextures() {
-    // -----------------------------------------------------------------------------
-    // Path is "..\\data\\images\\texture.dds"
-    // -----------------------------------------------------------------------------
-
-    CreateTexture("..\\data\\images\\earth.dds" , &this->Texture);
+    CreateTexture("..\\data\\earth.dds" , &this->Texture);
 
     return true;
 }
