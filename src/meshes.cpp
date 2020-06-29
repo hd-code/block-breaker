@@ -28,15 +28,25 @@ void CreateMesh(int numOfVertices, float *vertices, int numOfTriangles, int *tri
     gfx::CreateMesh(meshInfo, &mesh);
 }
 
+void addNormalsFromPosition(size_t n, float vertices[][8]) {
+    for (unsigned int i = 0; i < n; i++) {
+        float normal[3] = {vertices[i][0], vertices[i][1], vertices[i][2]};
+        gfx::GetNormalizedVector(normal, normal);
+        vertices[i][3] = normal[0];
+        vertices[i][4] = normal[1];
+        vertices[i][5] = normal[2];
+    }
+}
+
 // -----------------------------------------------------------------------------
 
 void CreateTriangleMesh(gfx::BHandle &material, gfx::BHandle &mesh) {
     float e = 0.5f;
 
     float vertices[][8] = {
-        {  0.0f, e, 0.0f, .5*TEX_MAX, TEX_MAX,  0.0f, 0.0f,-1.0f },
-        { -e, -e, 0.0f,   TEX_MIN, TEX_MIN,  0.0f, 0.0f,-1.0f  },
-        {  e, -e, 0.0f,   TEX_MAX, TEX_MIN,  0.0f, 0.0f,-1.0f  },
+        {0.0f, e, 0.0f,   0.0f, 0.0f,-1.0f,  .5*TEX_MAX, TEX_MIN },
+        {  -e,-e, 0.0f,   0.0f, 0.0f,-1.0f,     TEX_MIN, TEX_MAX },
+        {   e,-e, 0.0f,   0.0f, 0.0f,-1.0f,     TEX_MAX, TEX_MAX },
     };
 
     int triangles[][3] = {
@@ -53,35 +63,35 @@ void CreateCubeMesh(gfx::BHandle &material, gfx::BHandle &mesh) {
 
     float vertices[][8] = {
         // front
-        { -e, e,-e,  TEX_MIN, TEX_MIN,  0.0f, 0.0f,-1.0f },
-        { -e,-e,-e,  TEX_MIN, TEX_MAX,  0.0f, 0.0f,-1.0f },
-        {  e,-e,-e,  TEX_MAX, TEX_MAX,  0.0f, 0.0f,-1.0f },
-        {  e, e,-e,  TEX_MAX, TEX_MIN,  0.0f, 0.0f,-1.0f },
+        { -e, e,-e,    0.0f, 0.0f,-1.0f,   TEX_MIN, TEX_MIN },
+        { -e,-e,-e,    0.0f, 0.0f,-1.0f,   TEX_MIN, TEX_MAX },
+        {  e,-e,-e,    0.0f, 0.0f,-1.0f,   TEX_MAX, TEX_MAX },
+        {  e, e,-e,    0.0f, 0.0f,-1.0f,   TEX_MAX, TEX_MIN },
         // back
-        { -e,-e, e,  TEX_MIN, TEX_MIN,  0.0f, 0.0f, 1.0f },
-        { -e, e, e,  TEX_MIN, TEX_MAX,  0.0f, 0.0f, 1.0f },
-        {  e, e, e,  TEX_MAX, TEX_MAX,  0.0f, 0.0f, 1.0f },
-        {  e,-e, e,  TEX_MAX, TEX_MIN,  0.0f, 0.0f, 1.0f },
+        { -e,-e, e,    0.0f, 0.0f, 1.0f,   TEX_MIN, TEX_MIN },
+        { -e, e, e,    0.0f, 0.0f, 1.0f,   TEX_MIN, TEX_MAX },
+        {  e, e, e,    0.0f, 0.0f, 1.0f,   TEX_MAX, TEX_MAX },
+        {  e,-e, e,    0.0f, 0.0f, 1.0f,   TEX_MAX, TEX_MIN },
         // top
-        { -e, e, e,  TEX_MIN, TEX_MIN,  0.0f, 1.0f, 0.0f },
-        { -e, e,-e,  TEX_MIN, TEX_MAX,  0.0f, 1.0f, 0.0f },
-        {  e, e,-e,  TEX_MAX, TEX_MAX,  0.0f, 1.0f, 0.0f },
-        {  e, e, e,  TEX_MAX, TEX_MIN,  0.0f, 1.0f, 0.0f },
+        { -e, e, e,    0.0f, 1.0f, 0.0f,   TEX_MIN, TEX_MIN },
+        { -e, e,-e,    0.0f, 1.0f, 0.0f,   TEX_MIN, TEX_MAX },
+        {  e, e,-e,    0.0f, 1.0f, 0.0f,   TEX_MAX, TEX_MAX },
+        {  e, e, e,    0.0f, 1.0f, 0.0f,   TEX_MAX, TEX_MIN },
         // bottom
-        { -e,-e,-e,  TEX_MIN, TEX_MIN,  0.0f,-1.0f, 0.0f },
-        { -e,-e, e,  TEX_MIN, TEX_MAX,  0.0f,-1.0f, 0.0f },
-        {  e,-e, e,  TEX_MAX, TEX_MAX,  0.0f,-1.0f, 0.0f },
-        {  e,-e,-e,  TEX_MAX, TEX_MIN,  0.0f,-1.0f, 0.0f },
+        { -e,-e,-e,    0.0f,-1.0f, 0.0f,   TEX_MIN, TEX_MIN },
+        { -e,-e, e,    0.0f,-1.0f, 0.0f,   TEX_MIN, TEX_MAX },
+        {  e,-e, e,    0.0f,-1.0f, 0.0f,   TEX_MAX, TEX_MAX },
+        {  e,-e,-e,    0.0f,-1.0f, 0.0f,   TEX_MAX, TEX_MIN },
         // right
-        {  e, e,-e,  TEX_MIN, TEX_MIN,  1.0f, 0.0f, 0.0f },
-        {  e,-e,-e,  TEX_MIN, TEX_MAX,  1.0f, 0.0f, 0.0f },
-        {  e,-e, e,  TEX_MAX, TEX_MAX,  1.0f, 0.0f, 0.0f },
-        {  e, e, e,  TEX_MAX, TEX_MIN,  1.0f, 0.0f, 0.0f },
+        {  e, e,-e,    1.0f, 0.0f, 0.0f,   TEX_MIN, TEX_MIN },
+        {  e,-e,-e,    1.0f, 0.0f, 0.0f,   TEX_MIN, TEX_MAX },
+        {  e,-e, e,    1.0f, 0.0f, 0.0f,   TEX_MAX, TEX_MAX },
+        {  e, e, e,    1.0f, 0.0f, 0.0f,   TEX_MAX, TEX_MIN },
         // left
-        { -e, e, e,  TEX_MIN, TEX_MIN, -1.0f, 0.0f, 0.0f },
-        { -e,-e, e,  TEX_MIN, TEX_MAX, -1.0f, 0.0f, 0.0f },
-        { -e,-e,-e,  TEX_MAX, TEX_MAX, -1.0f, 0.0f, 0.0f },
-        { -e, e,-e,  TEX_MAX, TEX_MIN, -1.0f, 0.0f, 0.0f },
+        { -e, e, e,   -1.0f, 0.0f, 0.0f,   TEX_MIN, TEX_MIN },
+        { -e,-e, e,   -1.0f, 0.0f, 0.0f,   TEX_MIN, TEX_MAX },
+        { -e,-e,-e,   -1.0f, 0.0f, 0.0f,   TEX_MAX, TEX_MAX },
+        { -e, e,-e,   -1.0f, 0.0f, 0.0f,   TEX_MAX, TEX_MIN },
     };
 
     int triangles[][3] = {
@@ -116,8 +126,8 @@ void makeCircleVertices(float radius, float height, float texHeight, float verti
         vertices[i][1] = height;
         vertices[i][2] = sin(angle) * radius;
 
-        vertices[i][3] = texWidth;
-        vertices[i][4] = texHeight;
+        vertices[i][6] = texWidth;
+        vertices[i][7] = texHeight;
 
         texWidth += texWidthStep;
         angle += angleStep;
@@ -136,16 +146,6 @@ void makeSphereVertices(float vertices[][8]) {
 
         angle -= angleStep;
         texHeight += texHeightStep;
-    }
-}
-
-void addNormalsFromPosition(float vertices[][8], size_t n) {
-    for (unsigned int i = 0; i < n; i++) {
-        float normal[3] = {vertices[i][0], vertices[i][1], vertices[i][2]};
-        gfx::GetNormalizedVector(normal, normal);
-        vertices[i][5] = normal[0];
-        vertices[i][6] = normal[1];
-        vertices[i][7] = normal[2];
     }
 }
 
@@ -169,7 +169,7 @@ void CreateSphereMesh(gfx::BHandle &material, gfx::BHandle &mesh) {
     float vertices[N*M][8];
     makeSphereVertices(vertices);
 
-    addNormalsFromPosition(vertices, N*M);
+    addNormalsFromPosition(N*M, vertices);
 
     int triangles[2*N*(M-1)][3];
     triangulateSphere(triangles);

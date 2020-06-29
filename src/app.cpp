@@ -111,10 +111,10 @@ bool CApplication::InternOnCreateMaterials() {
     materialInfo.m_NumberOfInputElements = 3;
     materialInfo.m_InputElements[0].m_pName = "POSITION";
     materialInfo.m_InputElements[0].m_Type  = SInputElement::Float3;
-    materialInfo.m_InputElements[1].m_pName = "TEXCOORD";
-    materialInfo.m_InputElements[1].m_Type  = SInputElement::Float2;
-    materialInfo.m_InputElements[2].m_pName = "NORMAL";
-    materialInfo.m_InputElements[2].m_Type  = SInputElement::Float3;
+    materialInfo.m_InputElements[1].m_pName = "NORMAL";
+    materialInfo.m_InputElements[1].m_Type  = SInputElement::Float3;
+    materialInfo.m_InputElements[2].m_pName = "TEXCOORD";
+    materialInfo.m_InputElements[2].m_Type  = SInputElement::Float2;
 
     CreateMaterial(materialInfo, &this->Material);
 
