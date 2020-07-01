@@ -11,3 +11,5 @@ void CreateTriangleMesh(gfx::BHandle &material, gfx::BHandle &mesh);
 void CreateCubeMesh(gfx::BHandle &material, gfx::BHandle &mesh);
 
 void CreateSphereMesh(gfx::BHandle &material, gfx::BHandle &mesh);
+
+gfx::BHandle CreateGeoSphereMesh(gfx::BHandle &material);

@@ -39,6 +39,7 @@ class CApplication : public IApplication {
         BHandle TriangleMesh;
         BHandle CubeMesh;
         BHandle SphereMesh;
+        BHandle GeoSphereMesh;
 
         // Entities
         std::vector<SEntity> staticEntities;

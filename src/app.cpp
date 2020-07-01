@@ -19,6 +19,7 @@ CApplication::CApplication()
     , TriangleMesh(nullptr)
     , CubeMesh(nullptr)
     , SphereMesh(nullptr)
+    , GeoSphereMesh(nullptr)
 {}
 
 CApplication::~CApplication() {}
@@ -26,13 +27,16 @@ CApplication::~CApplication() {}
 // -----------------------------------------------------------------------------
 
 bool CApplication::InternOnStartup() {
-    SEntity entities[3] = {
-        { &this->TriangleMesh, -3.0f, 0.0f, 0.0f },
-        { &this->SphereMesh, 0.0f, 0.0f, 0.0f },
-        { &this->CubeMesh, 3.0f, 0.0f, 0.0f },
+    SEntity entities[] = {
+        { &this->TriangleMesh, -5.0f, 0.0f, 0.0f },
+        { &this->GeoSphereMesh, -2.0f, 0.0f, 0.0f },
+        { &this->SphereMesh, 2.0f, 0.0f, 0.0f },
+        { &this->CubeMesh, 5.0f, 0.0f, 0.0f },
     };
 
-    for (int i = 0; i < 3; i++) {
+    int numOfEntities = sizeof(entities) / sizeof(SEntity);
+
+    for (int i = 0; i < numOfEntities; i++) {
         this->dynamicEntities.push_back(entities[i]);
     }
 
@@ -172,6 +176,8 @@ bool CApplication::InternOnResize(int _Width, int _Height) {
 
 // -----------------------------------------------------------------------------
 
+// temporary stuff
+// just to see, how the meshes look like, will soon be replaced by the logic
 float angle = 0.0f;
 float angleStep = 1.1f;
 float maxAngle = 360.0f;
@@ -182,23 +188,33 @@ bool CApplication::InternOnUpdate() {
 
     return true;
 }
+// ---------------
 
 // -----------------------------------------------------------------------------
 
 bool CApplication::InternOnFrame() {
+    for (auto &entity : this->staticEntities) {
+        UploadConstantBuffer(entity.worldMatrix, this->CB_VS_WorldMatrix);
+        DrawMesh(*entity.mesh);
+    }
+
+    // temporary stuff
     float RotationXMatrix[16];
     float RotationYMatrix[16];
 
     float WorldMatrix[16];
+    // ---------------
 
     for (auto &entity : this->dynamicEntities) {
         updateWorldMatrix(entity);
 
+        // temporary stuff
         GetRotationXMatrix(angle, RotationXMatrix);
         GetRotationYMatrix(angle * 0.9f, RotationYMatrix);
 
         MulMatrix(RotationXMatrix, RotationYMatrix, WorldMatrix);
         MulMatrix(WorldMatrix, entity.worldMatrix, WorldMatrix);
+        // ---------------
 
         UploadConstantBuffer(WorldMatrix, this->CB_VS_WorldMatrix);
 
