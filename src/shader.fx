@@ -1,7 +1,13 @@
 // --- Textures ----------------------------------------------------------------
 
 sampler   Sampler : register(s0);
-Texture2D Texture : register(t0);
+
+Texture2D Tex0 : register(t0);
+Texture2D Tex1 : register(t1);
+Texture2D Tex2 : register(t2);
+Texture2D Tex3 : register(t3);
+Texture2D Tex4 : register(t4);
+Texture2D Tex5 : register(t5);
 
 // --- Constant Buffers --------------------------------------------------------
 
@@ -55,5 +61,5 @@ float4 PShader(PSInput input) : SV_Target {
 	
     float4 Light = AmbientLight + DiffuseLight; // + SpecularLight;
 
-    return Texture.Sample(Sampler, input.texCoords) * Light;
+    return Tex0.Sample(Sampler, input.texCoords) * Light;
 }

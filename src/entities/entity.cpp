@@ -29,12 +29,12 @@ gfx::BHandle createMaterial(
     }
 
     materialInfo.m_NumberOfVertexConstantBuffers = numOfVSB;
-    for (int i = 0; i < numOfTex; i++) {
+    for (int i = 0; i < numOfVSB; i++) {
         materialInfo.m_pVertexConstantBuffers[i] = vsBuffers[i];
     }
 
     materialInfo.m_NumberOfPixelConstantBuffers = numOfPSB;
-    for (int i = 0; i < numOfTex; i++) {
+    for (int i = 0; i < numOfPSB; i++) {
         materialInfo.m_pPixelConstantBuffers[i] = psBuffers[i];
     }
 

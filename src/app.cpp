@@ -1,16 +1,18 @@
 #include "app.hpp"
 
-#include "entity.hpp"
+// #include "ball.hpp"
+#include "entities/block.hpp"
+#include "entities/entity.hpp"
+#include "entities/paddle.hpp"
 #include "yoshix.h"
 
 using namespace gfx;
 
 // -----------------------------------------------------------------------------
 
-CApplication::CApplication()
-    : m_FieldOfViewY(60.0f)        // Set the vertical view angle of the camera to 60 degrees.
+CApplication::CApplication() :
     // Textures
-    , textures({nullptr, nullptr, nullptr, nullptr, nullptr, nullptr})
+      textures()
     // Constant Buffers
     , CB_VS_WorldMatrix(nullptr)
     , CB_VS_ViewProjectionMatrix(nullptr)
@@ -30,18 +32,18 @@ CApplication::~CApplication() {}
 // -----------------------------------------------------------------------------
 
 bool CApplication::InternOnStartup() {
-    // SEntity entities[] = {
-    //     { &this->TriangleMesh, -5.0f, 0.0f, 0.0f },
-    //     { &this->GeoSphereMesh, -2.0f, 0.0f, 0.0f },
-    //     { &this->SphereMesh, 2.0f, 0.0f, 0.0f },
-    //     { &this->CubeMesh, 5.0f, 0.0f, 0.0f },
-    // };
+    SEntity entities[] = {
+        { &this->blockMesh, TEX_BALL, -5.0f, 0.0f, 0.0f },
+        { &this->blockMesh, TEX_BALL, -2.0f, 0.0f, 0.0f },
+        { &this->paddleMesh, TEX_BALL, 2.0f, 0.0f, 0.0f },
+        { &this->blockMesh, TEX_BALL, 5.0f, 0.0f, 0.0f },
+    };
 
-    // int numOfEntities = sizeof(entities) / sizeof(SEntity);
+    int numOfEntities = sizeof(entities) / sizeof(SEntity);
 
-    // for (int i = 0; i < numOfEntities; i++) {
-    //     this->dynamicEntities.push_back(entities[i]);
-    // }
+    for (int i = 0; i < numOfEntities; i++) {
+        this->dynamicEntities.push_back(entities[i]);
+    }
 
     return true;
 }
@@ -120,21 +122,21 @@ bool CApplication::InternOnReleaseMaterials() {
 
     return true;
 }
-/*
+
 // -----------------------------------------------------------------------------
 
 bool CApplication::InternOnCreateMeshes() {
-    CreateTriangleMesh(this->Material, this->TriangleMesh);
-    CreateCubeMesh(this->Material, this->CubeMesh);
-    CreateSphereMesh(this->Material, this->SphereMesh);
+    // this->ballMesh   = createBallMesh(this->material);
+    this->blockMesh  = createBlockMesh(this->material);
+    this->paddleMesh = createPaddleMesh(this->material);
 
     return true;
 }
 
 bool CApplication::InternOnReleaseMeshes() {
-    ReleaseMesh(this->TriangleMesh);
-    ReleaseMesh(this->CubeMesh);
-    ReleaseMesh(this->SphereMesh);
+    ReleaseMesh(this->ballMesh);
+    ReleaseMesh(this->blockMesh);
+    ReleaseMesh(this->paddleMesh);
 
     return true;
 }
@@ -152,7 +154,7 @@ bool CApplication::InternOnResize(int _Width, int _Height) {
 
     float projectionMatrix[16];
     GetProjectionMatrix(
-        this->m_FieldOfViewY,
+        60.0f,
         (float) _Width / (float) _Height,
         0.1f, 100.0f, projectionMatrix
     );
@@ -166,19 +168,10 @@ bool CApplication::InternOnResize(int _Width, int _Height) {
 
 // -----------------------------------------------------------------------------
 
-// temporary stuff
-// just to see, how the meshes look like, will soon be replaced by the logic
-float angle = 0.0f;
-float angleStep = 1.1f;
-float maxAngle = 360.0f;
-
 bool CApplication::InternOnUpdate() {
-    angle += angleStep;
-    if (angle > maxAngle) angle = 0;
 
     return true;
 }
-// ---------------
 
 // -----------------------------------------------------------------------------
 
@@ -188,29 +181,11 @@ bool CApplication::InternOnFrame() {
         DrawMesh(*entity.mesh);
     }
 
-    // temporary stuff
-    float RotationXMatrix[16];
-    float RotationYMatrix[16];
-
-    float WorldMatrix[16];
-    // ---------------
-
     for (auto &entity : this->dynamicEntities) {
-        updateWorldMatrix(entity);
-
-        // temporary stuff
-        GetRotationXMatrix(angle, RotationXMatrix);
-        GetRotationYMatrix(angle * 0.9f, RotationYMatrix);
-
-        MulMatrix(RotationXMatrix, RotationYMatrix, WorldMatrix);
-        MulMatrix(WorldMatrix, entity.worldMatrix, WorldMatrix);
-        // ---------------
-
-        UploadConstantBuffer(WorldMatrix, this->CB_VS_WorldMatrix);
-
+        entity.updateWorldMatrix();
+        UploadConstantBuffer(entity.worldMatrix, this->CB_VS_WorldMatrix);
         DrawMesh(*entity.mesh);
     }
 
     return true;
 }
-//*/

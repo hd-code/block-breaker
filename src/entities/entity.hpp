@@ -7,7 +7,7 @@
 enum ETexture { TEX_BALL, TEX_PADDLE, TEX_BED_ROCK, TEX_BLOCK, TEX_BLOCK_HARD, TEX_BLOCK_CRACKED };
 
 struct SEntity {
-    gfx::BHandle mesh;
+    gfx::BHandle *mesh;
     ETexture texture;
 
     float position[3];
@@ -22,7 +22,7 @@ gfx::BHandle createMaterial(
     gfx::BHandle textures[],  int numOfTex,
     gfx::BHandle vsBuffers[], int numOfVSB,
     gfx::BHandle psBuffers[], int numOfPSB,
-    gfx::BHandle vertexShader, gfx::BHandle pixelShader
+    gfx::BHandle &vertexShader, gfx::BHandle &pixelShader
 );
 
 // -----------------------------------------------------------------------------

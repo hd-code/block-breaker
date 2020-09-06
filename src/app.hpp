@@ -2,8 +2,7 @@
 
 #include <vector>
 
-#include "entity.hpp"
-#include "meshes.hpp"
+#include "entities/entity.hpp"
 #include "yoshix.h"
 
 using namespace gfx;
@@ -16,8 +15,6 @@ class CApplication : public IApplication {
         virtual ~CApplication();
 
     private:
-        float m_FieldOfViewY;             // Vertical view angle of the camera
-
         // Textures
         BHandle textures[6];
 
