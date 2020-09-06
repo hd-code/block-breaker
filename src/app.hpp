@@ -1,13 +1,10 @@
 #pragma once
 
-// -----------------------------------------------------------------------------
+#include <vector>
 
 #include "entity.hpp"
 #include "meshes.hpp"
-
 #include "yoshix.h"
-
-#include <vector>
 
 using namespace gfx;
 
@@ -22,24 +19,23 @@ class CApplication : public IApplication {
         float m_FieldOfViewY;             // Vertical view angle of the camera
 
         // Textures
-        BHandle Texture;
+        BHandle textures[6];
 
         // Constant Buffers
         BHandle CB_VS_WorldMatrix;
         BHandle CB_VS_ViewProjectionMatrix;
 
         // Shaders
-        BHandle VertexShader;
-        BHandle PixelShader;
+        BHandle vertexShader;
+        BHandle pixelShader;
 
         // Materials
-        BHandle Material;
+        BHandle material;
 
         // Meshes
-        BHandle TriangleMesh;
-        BHandle CubeMesh;
-        BHandle SphereMesh;
-        BHandle GeoSphereMesh;
+        BHandle ballMesh;
+        BHandle blockMesh;
+        BHandle paddleMesh;
 
         // Entities
         std::vector<SEntity> staticEntities;

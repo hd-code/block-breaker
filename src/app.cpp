@@ -1,7 +1,6 @@
 #include "app.hpp"
-#include "entity.hpp"
-#include "meshes.hpp"
 
+#include "entity.hpp"
 #include "yoshix.h"
 
 using namespace gfx;
@@ -10,16 +9,20 @@ using namespace gfx;
 
 CApplication::CApplication()
     : m_FieldOfViewY(60.0f)        // Set the vertical view angle of the camera to 60 degrees.
-    , Texture(nullptr)
+    // Textures
+    , textures({nullptr, nullptr, nullptr, nullptr, nullptr, nullptr})
+    // Constant Buffers
     , CB_VS_WorldMatrix(nullptr)
     , CB_VS_ViewProjectionMatrix(nullptr)
-    , VertexShader(nullptr)
-    , PixelShader(nullptr)
-    , Material(nullptr)
-    , TriangleMesh(nullptr)
-    , CubeMesh(nullptr)
-    , SphereMesh(nullptr)
-    , GeoSphereMesh(nullptr)
+    // Shaders
+    , vertexShader(nullptr)
+    , pixelShader(nullptr)
+    // Materials
+    , material(nullptr)
+    // Meshes
+    , ballMesh(nullptr)
+    , blockMesh(nullptr)
+    , paddleMesh(nullptr)
 {}
 
 CApplication::~CApplication() {}
@@ -27,18 +30,18 @@ CApplication::~CApplication() {}
 // -----------------------------------------------------------------------------
 
 bool CApplication::InternOnStartup() {
-    SEntity entities[] = {
-        { &this->TriangleMesh, -5.0f, 0.0f, 0.0f },
-        { &this->GeoSphereMesh, -2.0f, 0.0f, 0.0f },
-        { &this->SphereMesh, 2.0f, 0.0f, 0.0f },
-        { &this->CubeMesh, 5.0f, 0.0f, 0.0f },
-    };
+    // SEntity entities[] = {
+    //     { &this->TriangleMesh, -5.0f, 0.0f, 0.0f },
+    //     { &this->GeoSphereMesh, -2.0f, 0.0f, 0.0f },
+    //     { &this->SphereMesh, 2.0f, 0.0f, 0.0f },
+    //     { &this->CubeMesh, 5.0f, 0.0f, 0.0f },
+    // };
 
-    int numOfEntities = sizeof(entities) / sizeof(SEntity);
+    // int numOfEntities = sizeof(entities) / sizeof(SEntity);
 
-    for (int i = 0; i < numOfEntities; i++) {
-        this->dynamicEntities.push_back(entities[i]);
-    }
+    // for (int i = 0; i < numOfEntities; i++) {
+    //     this->dynamicEntities.push_back(entities[i]);
+    // }
 
     return true;
 }
@@ -50,13 +53,20 @@ bool CApplication::InternOnShutdown() {
 // -----------------------------------------------------------------------------
 
 bool CApplication::InternOnCreateTextures() {
-    CreateTexture("..\\data\\earth.dds" , &this->Texture);
+    CreateTexture("..\\data\\earth.dds" , &this->textures[0]);
+    CreateTexture("..\\data\\earth.dds" , &this->textures[1]);
+    CreateTexture("..\\data\\earth.dds" , &this->textures[2]);
+    CreateTexture("..\\data\\earth.dds" , &this->textures[3]);
+    CreateTexture("..\\data\\earth.dds" , &this->textures[4]);
+    CreateTexture("..\\data\\earth.dds" , &this->textures[5]);
 
     return true;
 }
 
 bool CApplication::InternOnReleaseTextures() {
-    ReleaseTexture(this->Texture);
+    for (int i = 0; i < 6; i++) {
+        ReleaseTexture(this->textures[i]);
+    }
 
     return true;
 }
@@ -82,15 +92,15 @@ bool CApplication::InternOnReleaseConstantBuffers() {
 // -----------------------------------------------------------------------------
 
 bool CApplication::InternOnCreateShader() {
-    CreateVertexShader("..\\src\\shader.fx", "VShader", &this->VertexShader);
-    CreatePixelShader("..\\src\\shader.fx", "PShader", &this->PixelShader);
+    CreateVertexShader("..\\src\\shader.fx", "VShader", &this->vertexShader);
+    CreatePixelShader ("..\\src\\shader.fx", "PShader", &this->pixelShader);
 
     return true;
 }
 
 bool CApplication::InternOnReleaseShader() {
-    ReleaseVertexShader(this->VertexShader);
-    ReleasePixelShader(this->PixelShader);
+    ReleaseVertexShader(this->vertexShader);
+    ReleasePixelShader (this->pixelShader);
 
     return true;
 }
@@ -98,39 +108,19 @@ bool CApplication::InternOnReleaseShader() {
 // -----------------------------------------------------------------------------
 
 bool CApplication::InternOnCreateMaterials() {
-    SMaterialInfo materialInfo;
+    BHandle vsBuffers[2] = { this->CB_VS_WorldMatrix, this->CB_VS_ViewProjectionMatrix};
 
-    materialInfo.m_NumberOfTextures = 1;
-    materialInfo.m_pTextures[0] = this->Texture;
-
-    materialInfo.m_NumberOfVertexConstantBuffers = 2;
-    materialInfo.m_pVertexConstantBuffers[0] = this->CB_VS_WorldMatrix;
-    materialInfo.m_pVertexConstantBuffers[1] = this->CB_VS_ViewProjectionMatrix;
-
-    materialInfo.m_NumberOfPixelConstantBuffers = 0;
-
-    materialInfo.m_pVertexShader = this->VertexShader;
-    materialInfo.m_pPixelShader  = this->PixelShader;
-
-    materialInfo.m_NumberOfInputElements = 3;
-    materialInfo.m_InputElements[0].m_pName = "POSITION";
-    materialInfo.m_InputElements[0].m_Type  = SInputElement::Float3;
-    materialInfo.m_InputElements[1].m_pName = "NORMAL";
-    materialInfo.m_InputElements[1].m_Type  = SInputElement::Float3;
-    materialInfo.m_InputElements[2].m_pName = "TEXCOORD";
-    materialInfo.m_InputElements[2].m_Type  = SInputElement::Float2;
-
-    CreateMaterial(materialInfo, &this->Material);
+    this->material = createMaterial(this->textures, 6, vsBuffers, 2, nullptr, 0, this->vertexShader, this->pixelShader);
 
     return true;
 }
 
 bool CApplication::InternOnReleaseMaterials() {
-    ReleaseMaterial(this->Material);
+    ReleaseMaterial(this->material);
 
     return true;
 }
-
+/*
 // -----------------------------------------------------------------------------
 
 bool CApplication::InternOnCreateMeshes() {
@@ -223,3 +213,4 @@ bool CApplication::InternOnFrame() {
 
     return true;
 }
+//*/
