@@ -1,6 +1,6 @@
 // --- Textures ----------------------------------------------------------------
 
-sampler   Sampler : register(s0);
+sampler Sampler : register(s0);
 
 Texture2D Tex0 : register(t0);
 Texture2D Tex1 : register(t1);

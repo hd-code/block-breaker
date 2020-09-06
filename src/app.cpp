@@ -55,12 +55,12 @@ bool CApplication::InternOnShutdown() {
 // -----------------------------------------------------------------------------
 
 bool CApplication::InternOnCreateTextures() {
-    CreateTexture("..\\data\\cube.dds" , &this->Textures[0]);
-    CreateTexture("..\\data\\earth.dds" , &this->Textures[1]);
-    CreateTexture("..\\data\\leaf.dds" , &this->Textures[2]);
+    CreateTexture("..\\data\\ball.png" , &this->Textures[0]);
+    CreateTexture("..\\data\\paddle.jpg" , &this->Textures[1]);
+    CreateTexture("..\\data\\bed-rock.jpg" , &this->Textures[2]);
     CreateTexture("..\\data\\moon.dds" , &this->Textures[3]);
-    CreateTexture("..\\data\\sky.dds" , &this->Textures[4]);
-    CreateTexture("..\\data\\wall.dds" , &this->Textures[5]);
+    CreateTexture("..\\data\\block-hard.jpg" , &this->Textures[4]);
+    CreateTexture("..\\data\\block-cracked.jpg" , &this->Textures[5]);
 
     return true;
 }
