@@ -39,6 +39,8 @@ SBall createBall(gfx::BHandle ballMesh, float position[3]) {
     ball.direction[2] = 0.0f;
     ball.radius = RADIUS;
     ball.speed  = SPEED;
+
+    return ball;
 }
 
 // -----------------------------------------------------------------------------
@@ -58,7 +60,7 @@ void scaleVector(float vec[3], float scale, float result[3]) {
     result[2] = vec[2] * scale;
 }
 
-void calcVertexInMiddle(SVertex vert1, SVertex vert2, SVertex result) {
+void calcVertexInMiddle(const SVertex &vert1, const SVertex &vert2, SVertex &result) {
     // position
     result.position[0] = (vert1.position[0] + vert2.position[0]) / 2.0f;
     result.position[1] = (vert1.position[1] + vert2.position[1]) / 2.0f;
@@ -68,7 +70,7 @@ void calcVertexInMiddle(SVertex vert1, SVertex vert2, SVertex result) {
     result.texCoords[1] = (vert1.texCoords[1] + vert2.texCoords[1]) / 2.0f;
 }
 
-void subdivideTriangle(std::vector<SVertex> verts, std::vector<STriangle> triangles, int indexOfTriangle) {
+void subdivideTriangle(std::vector<SVertex> &verts, std::vector<STriangle> &triangles, int indexOfTriangle) {
     STriangle origTriangle = triangles.at(indexOfTriangle);
     SVertex origVerts[] = {
         verts.at(origTriangle.indices[0]),
@@ -111,7 +113,7 @@ void subdivideTriangle(std::vector<SVertex> verts, std::vector<STriangle> triang
     triangles.push_back(newTriangles[3]);
 }
 
-void subdivideTriangles(std::vector<SVertex> verts, std::vector<STriangle> triangles) {
+void subdivideTriangles(std::vector<SVertex> &verts, std::vector<STriangle> &triangles) {
     int numOfTriangles = triangles.size();
     for (int i = 0; i < numOfTriangles; i++) {
         subdivideTriangle(verts, triangles, 0); // original triangle is delted and new ones are appended
@@ -183,6 +185,8 @@ gfx::BHandle createBallMesh(gfx::BHandle &material) {
     triangles.push_back({11,7,6});
     triangles.push_back({12,8,7});
 
+    subdivideTriangles(verts, triangles);
+    subdivideTriangles(verts, triangles);
     subdivideTriangles(verts, triangles);
 
     int numOfVerts = verts.size();

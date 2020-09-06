@@ -15,7 +15,8 @@ CApplication::CApplication() :
       Textures()
     // Constant Buffers
     , EntityBuffer(nullptr)
-    , GeneralBuffer(nullptr)
+    , GeneralVSBuffer(nullptr)
+    , GeneralPSBuffer(nullptr)
     // Shaders
     , VertexShader(nullptr)
     , PixelShader(nullptr)
@@ -34,7 +35,7 @@ CApplication::~CApplication() {}
 bool CApplication::InternOnStartup() {
     SEntity entities[] = {
         { &this->BlockMesh, TEX_BALL, -5.0f, 0.0f, 0.0f },
-        { &this->BlockMesh, TEX_BALL, -2.0f, 0.0f, 0.0f },
+        { &this->BallMesh, TEX_BALL, -2.0f, 0.0f, 0.0f },
         { &this->PaddleMesh, TEX_BALL, 2.0f, 0.0f, 0.0f },
         { &this->BlockMesh, TEX_BALL, 5.0f, 0.0f, 0.0f },
     };
@@ -87,23 +88,29 @@ struct SEntityBuffer {
     }
 };
 
-struct SGeneralBuffer {
+struct SGeneralVSBuffer {
     float viewProjectionMatrix[16];
+};
+
+struct SGeneralPSBuffer {
     float cameraPosition[3];
-    float _padding;
+    float _padding0;
     float lightDir[3];
+    float _padding1;
 };
 
 bool CApplication::InternOnCreateConstantBuffers() {
+    CreateConstantBuffer(sizeof(SGeneralVSBuffer), &this->GeneralVSBuffer);
     CreateConstantBuffer(sizeof(SEntityBuffer), &this->EntityBuffer);
-    CreateConstantBuffer(sizeof(SGeneralBuffer), &this->GeneralBuffer);
+    CreateConstantBuffer(sizeof(SGeneralPSBuffer), &this->GeneralPSBuffer);
 
     return true; 
 }
 
 bool CApplication::InternOnReleaseConstantBuffers() {
+    ReleaseConstantBuffer(this->GeneralVSBuffer);
     ReleaseConstantBuffer(this->EntityBuffer);
-    ReleaseConstantBuffer(this->GeneralBuffer);
+    ReleaseConstantBuffer(this->GeneralPSBuffer);
 
     return true;
 }
@@ -127,9 +134,15 @@ bool CApplication::InternOnReleaseShader() {
 // -----------------------------------------------------------------------------
 
 bool CApplication::InternOnCreateMaterials() {
-    BHandle vsBuffers[2] = { this->EntityBuffer, this->GeneralBuffer};
+    BHandle vsBuffers[2] = { this->GeneralVSBuffer, this->EntityBuffer };
+    BHandle psBuffers[1] = { this->GeneralPSBuffer };
 
-    this->Material = createMaterial(this->Textures, 6, vsBuffers, 2, nullptr, 0, this->VertexShader, this->PixelShader);
+    this->Material = createMaterial(
+        6, this->Textures,
+        2, vsBuffers,
+        1, psBuffers,
+        this->VertexShader, this->PixelShader
+    );
 
     return true;
 }
@@ -169,7 +182,7 @@ bool CApplication::InternOnResize(int _Width, int _Height) {
     float near = 0.1f;
     float far  = 100.0f;
     
-    float lightDir[3] = { 1.0f, 10.0f, -10.0f };
+    float lightDir[3] = { -1.0f, -0.7f, 2.0f };
 
     float viewMatrix[16];
     GetViewMatrix(cameraPosition, cameraTarget, cameraUp, viewMatrix);
@@ -177,15 +190,16 @@ bool CApplication::InternOnResize(int _Width, int _Height) {
     float projectionMatrix[16];
     GetProjectionMatrix(lenseAngle, (float) _Width / (float) _Height, near, far, projectionMatrix);
 
-    SGeneralBuffer buffer;
+    SGeneralVSBuffer vsBuffer;
+    MulMatrix(viewMatrix, projectionMatrix, vsBuffer.viewProjectionMatrix);
+    UploadConstantBuffer(&vsBuffer, this->GeneralVSBuffer);
 
-    MulMatrix(viewMatrix, projectionMatrix, buffer.viewProjectionMatrix);
-    buffer.cameraPosition[0] = cameraPosition[0];
-    buffer.cameraPosition[1] = cameraPosition[1];
-    buffer.cameraPosition[2] = cameraPosition[2];
-    GetNormalizedVector(lightDir, buffer.lightDir);
-
-    UploadConstantBuffer(&buffer, this->GeneralBuffer);
+    SGeneralPSBuffer psBuffer;
+    psBuffer.cameraPosition[0] = cameraPosition[0];
+    psBuffer.cameraPosition[1] = cameraPosition[1];
+    psBuffer.cameraPosition[2] = cameraPosition[2];
+    GetNormalizedVector(lightDir, psBuffer.lightDir);
+    UploadConstantBuffer(&psBuffer, this->GeneralPSBuffer);
 
     return true;
 }

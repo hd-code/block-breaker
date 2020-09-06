@@ -16,9 +16,9 @@ void SEntity::updateWorldMatrix() {
 // -----------------------------------------------------------------------------
 
 gfx::BHandle createMaterial(
-    gfx::BHandle textures[], int numOfTex,
-    gfx::BHandle vsBuffers[], int numOfVSB,
-    gfx::BHandle psBuffers[], int numOfPSB,
+    int numOfTex, gfx::BHandle textures[],
+    int numOfVSB, gfx::BHandle vsBuffers[],
+    int numOfPSB, gfx::BHandle psBuffers[],
     gfx::BHandle &vertexShader, gfx::BHandle &pixelShader
 ) {
     gfx::SMaterialInfo materialInfo;

@@ -20,7 +20,8 @@ class CApplication : public IApplication {
 
         // Constant Buffers
         BHandle EntityBuffer;
-        BHandle GeneralBuffer;
+        BHandle GeneralVSBuffer;
+        BHandle GeneralPSBuffer;
 
         // Shaders
         BHandle VertexShader;
