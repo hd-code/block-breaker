@@ -6,6 +6,8 @@
 
 enum ETexture { TEX_BALL, TEX_PADDLE, TEX_BED_ROCK, TEX_BLOCK, TEX_BLOCK_HARD, TEX_BLOCK_CRACKED };
 
+enum ECollision { TOP, BOTTOM, LEFT, RIGHT };
+
 struct SEntity {
     gfx::BHandle *mesh;
     ETexture texture;

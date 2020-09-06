@@ -13,10 +13,13 @@ Texture2D Tex5 : register(t5);
 
 cbuffer VSBuffer : register(b0) {
     float4x4 WorldMatrix;
+    float TextureIndex;
 };
 
 cbuffer VSBuffer : register(b1) {
     float4x4 ViewProjectionMatrix;
+    float3 CameraPos;
+    float3 LightDir;
 }
 
 // --- Data Types --------------------------------------------------------------
@@ -31,7 +34,6 @@ struct PSInput {
     float4 position  : SV_POSITION;
     float3 normal    : NORMAL;
     float2 texCoords : TEXCOORD0;
-    float3 lightDir  : TEXCOORD1;
 };
 
 // --- Vertex Shader -----------------------------------------------------------
@@ -44,7 +46,6 @@ PSInput VShader(VSInput input) {
     result.position  = mul(worldSpacePosition, ViewProjectionMatrix);
     result.normal    = mul(input.normal, (float3x3)WorldMatrix);
     result.texCoords = input.texCoords;
-    result.lightDir  = normalize(lightPos - (float3)worldSpacePosition);
 
     return result;
 }
@@ -52,14 +53,29 @@ PSInput VShader(VSInput input) {
 // --- Pixel Shader ------------------------------------------------------------
 
 float4 PShader(PSInput input) : SV_Target {
-    float3 lightDir = normalize(input.lightDir);
-    float3 normal   = normalize(input.normal);
+    float3 lightVec = normalize(-LightDir)
+    float3 viewVec  = normalize(CameraPos - input.position)
+    float3 halfVec  = normalize(lightVec + viewVec)
 
-    float4 AmbientLight  = float4(0.1f, 0.1f, 0.1f, 1.0f);
-	float4 DiffuseLight  = max(dot(normal, lightDir), 0.0f);
-    // float4 SpecularLight = pow(max(dot(WSNormal, WSHalf), 0.0f), 2.0f);
+    float3 normal = normalize(input.normal);
+
+    float4 ambientLight  = float4(0.1f, 0.1f, 0.1f, 1.0f);
+	float4 diffuseLight  = max(dot(normal, lightVec), 0.0f);
+    float4 specularLight = pow(max(dot(normal, halfVec), 0.0f), 80.0f);
 	
-    float4 Light = AmbientLight + DiffuseLight; // + SpecularLight;
+    float4 light = ambientLight + diffuseLight + specularLight;
 
-    return Tex0.Sample(Sampler, input.texCoords) * Light;
+    return getTexture().Sample(Sampler, input.texCoords) * light;
+}
+
+Texture2D getTexture() {
+    switch (TextureIndex) {
+        case 0: return Tex0;
+        case 1: return Tex1;
+        case 2: return Tex2;
+        case 3: return Tex3;
+        case 4: return Tex4;
+        case 5: return Tex5;
+        default: return Tex0;
+    }
 }

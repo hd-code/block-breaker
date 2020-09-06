@@ -16,27 +16,27 @@ class CApplication : public IApplication {
 
     private:
         // Textures
-        BHandle textures[6];
+        BHandle Textures[6];
 
         // Constant Buffers
-        BHandle CB_VS_WorldMatrix;
-        BHandle CB_VS_ViewProjectionMatrix;
+        BHandle EntityBuffer;
+        BHandle GeneralBuffer;
 
         // Shaders
-        BHandle vertexShader;
-        BHandle pixelShader;
+        BHandle VertexShader;
+        BHandle PixelShader;
 
         // Materials
-        BHandle material;
+        BHandle Material;
 
         // Meshes
-        BHandle ballMesh;
-        BHandle blockMesh;
-        BHandle paddleMesh;
+        BHandle BallMesh;
+        BHandle BlockMesh;
+        BHandle PaddleMesh;
 
         // Entities
-        std::vector<SEntity> staticEntities;
-        std::vector<SEntity> dynamicEntities;
+        std::vector<SEntity> StaticEntities;
+        std::vector<SEntity> DynamicEntities;
 
     private:
         virtual bool InternOnStartup();
@@ -54,4 +54,6 @@ class CApplication : public IApplication {
         virtual bool InternOnResize(int _Width, int _Height);
         virtual bool InternOnUpdate();
         virtual bool InternOnFrame();
+
+        void drawEntity(SEntity &entity);
 };

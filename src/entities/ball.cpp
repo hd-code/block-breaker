@@ -1,8 +1,50 @@
+#include "ball.hpp"
 
+#include <vector>
+
+// -----------------------------------------------------------------------------
+
+const float RADIUS = 0.5f;
+const float SPEED = 0.01f;
+
+void SBall::changeDirection(ECollision collision) {
+    switch (collision) {
+        case TOP:
+        case BOTTOM:
+            this->direction[1] *= -1.0f; // flip y direction
+            break;
+        case LEFT:
+        case RIGHT:
+            this->direction[0] *= -1.0f; // flip x direction
+            break;
+    }
+}
+
+void SBall::move() {
+    this->position[0] += this->speed * this->direction[0];
+    this->position[1] += this->speed * this->direction[1];
+    this->position[2] += this->speed * this->direction[2];
+}
+
+SBall createBall(gfx::BHandle ballMesh, float position[3]) {
+    SBall ball;
+
+    ball.mesh = &ballMesh;
+    ball.texture = TEX_BALL;
+
+    ball.position[0] = position[0];
+    ball.position[1] = position[1];
+    ball.position[2] = position[2];
+
+    ball.direction[2] = 0.0f;
+    ball.radius = RADIUS;
+    ball.speed  = SPEED;
+}
+
+// -----------------------------------------------------------------------------
 
 struct SVertex {
     float position[3];
-    float normal[3];
     float texCoords[2];
 };
 
@@ -10,28 +52,31 @@ struct STriangle {
     int indices[3];
 };
 
-
-const int NUM_OF_SUBDIVISIONS = 3;
-
-void calcVertexInMiddle(float vert1[8], float vert2[8], float result[8]) {
-    // position
-    result[0] = (vert1[0] + vert2[0]) / 2.0f;
-    result[1] = (vert1[1] + vert2[1]) / 2.0f;
-    result[2] = (vert1[2] + vert2[2]) / 2.0f;
-    // texture coordinate
-    result[6] = (vert1[6] + vert2[6]) / 2.0f;
-    result[7] = (vert1[7] + vert2[7]) / 2.0f;
+void scaleVector(float vec[3], float scale, float result[3]) {
+    result[0] = vec[0] * scale;
+    result[1] = vec[1] * scale;
+    result[2] = vec[2] * scale;
 }
-/*
-void subdivideTriangle(std::vector<float[8]> vertices, std::vector<int[3]> triangles, int indexOfTriangleToSubdivide) {
-    int *origTriangle = triangles.at(indexOfTriangleToSubdivide);
-    float *origVerts[] = {
-        vertices.at(origTriangle[0]),
-        vertices.at(origTriangle[1]),
-        vertices.at(origTriangle[2]),
+
+void calcVertexInMiddle(SVertex vert1, SVertex vert2, SVertex result) {
+    // position
+    result.position[0] = (vert1.position[0] + vert2.position[0]) / 2.0f;
+    result.position[1] = (vert1.position[1] + vert2.position[1]) / 2.0f;
+    result.position[2] = (vert1.position[2] + vert2.position[2]) / 2.0f;
+    // texture coordinate
+    result.texCoords[0] = (vert1.texCoords[0] + vert2.texCoords[0]) / 2.0f;
+    result.texCoords[1] = (vert1.texCoords[1] + vert2.texCoords[1]) / 2.0f;
+}
+
+void subdivideTriangle(std::vector<SVertex> verts, std::vector<STriangle> triangles, int indexOfTriangle) {
+    STriangle origTriangle = triangles.at(indexOfTriangle);
+    SVertex origVerts[] = {
+        verts.at(origTriangle.indices[0]),
+        verts.at(origTriangle.indices[1]),
+        verts.at(origTriangle.indices[2]),
     };
 
-    int currentNumOfVerts = vertices.size();
+    int currentNumOfVerts = verts.size();
     int newVertsIndex[3] = { currentNumOfVerts, currentNumOfVerts + 1, currentNumOfVerts + 2 };
 
     /*
@@ -41,84 +86,119 @@ void subdivideTriangle(std::vector<float[8]> vertices, std::vector<int[3]> trian
          /\  /\
         0------1
            0
-    *
+    */
 
-    float newVerts[3][8];
+    SVertex newVerts[3];
     calcVertexInMiddle(origVerts[0], origVerts[1], newVerts[0]);
     calcVertexInMiddle(origVerts[1], origVerts[2], newVerts[1]);
     calcVertexInMiddle(origVerts[0], origVerts[2], newVerts[2]);
 
-    int newTriangles[][3] = {
-        { origTriangle[0], newVertsIndex[0], newVertsIndex[2] },
-        { origTriangle[1], newVertsIndex[1], newVertsIndex[0] },
-        { origTriangle[2], newVertsIndex[2], newVertsIndex[1] },
-        {newVertsIndex[0], newVertsIndex[1], newVertsIndex[2] },
+    STriangle newTriangles[4] = {
+        { origTriangle.indices[0], newVertsIndex[0], newVertsIndex[2] },
+        { origTriangle.indices[1], newVertsIndex[1], newVertsIndex[0] },
+        { origTriangle.indices[2], newVertsIndex[2], newVertsIndex[1] },
+        {        newVertsIndex[0], newVertsIndex[1], newVertsIndex[2] },
     };
 
-    vertices.push_back(newVerts[0]);
-    vertices.push_back(newVerts[1]);
-    vertices.push_back(newVerts[2]);
+    verts.push_back(newVerts[0]);
+    verts.push_back(newVerts[1]);
+    verts.push_back(newVerts[2]);
 
-    triangles.erase(triangles.begin() + indexOfTriangleToSubdivide);
+    triangles.erase(triangles.begin() + indexOfTriangle);
     triangles.push_back(newTriangles[0]);
     triangles.push_back(newTriangles[1]);
     triangles.push_back(newTriangles[2]);
     triangles.push_back(newTriangles[3]);
-} //*/
-
-void normalizePositionAndUseAsNormal(float vertex[8]) {
-    float position[3];
-
-    position[0] = vertex[0];
-    position[1] = vertex[1];
-    position[2] = vertex[2];
-
-    gfx::GetNormalizedVector(position, position);
-
-    vertex[0] = position[0];
-    vertex[1] = position[1];
-    vertex[2] = position[2];
-    vertex[3] = position[0];
-    vertex[4] = position[1];
-    vertex[5] = position[2];
 }
 
-void normalizePositionAndUseAsNormal(size_t numOfVertices, float vertices[][8]) {
-    for (size_t i = 0; i < numOfVertices; i++) {
-        normalizePositionAndUseAsNormal(vertices[i]);
+void subdivideTriangles(std::vector<SVertex> verts, std::vector<STriangle> triangles) {
+    int numOfTriangles = triangles.size();
+    for (int i = 0; i < numOfTriangles; i++) {
+        subdivideTriangle(verts, triangles, 0); // original triangle is delted and new ones are appended
     }
 }
 
-gfx::BHandle CreateGeoSphereMesh(gfx::BHandle &material) {
-    // std::vector<float[8]> vertices;
-    // std::vector<int[3]> triangles;
+float* toVertexArray(std::vector<SVertex> verts, float tmpArray[], int numOfVerts) {
+    for (int i = 0; i < numOfVerts; i++) {
+        SVertex vertex = verts[i];
 
-    float initVerts[][8] = { // normals are set later automatically
-        // Top verts
-        {  0.0f, 1.0f, 0.0f,   0.0f, 0.0f, 0.0f,   0.000f, 0.0f }, // 0
-        {  0.0f, 1.0f, 0.0f,   0.0f, 0.0f, 0.0f,   0.333f, 0.0f },
-        {  0.0f, 1.0f, 0.0f,   0.0f, 0.0f, 0.0f,   0.667f, 0.0f },
-        {  0.0f, 1.0f, 0.0f,   0.0f, 0.0f, 0.0f,   1.000f, 0.0f },
+        float normal[3];
+        gfx::GetNormalizedVector(vertex.position, normal);
 
-        {  0.0f, 0.0f,-1.0f,   0.0f, 0.0f, 0.0f,   0.0f , 0.5f }, // 4
-        {  1.0f, 0.0f, 0.0f,   0.0f, 0.0f, 0.0f,   0.25f, 0.5f },
-        {  0.0f, 0.0f, 1.0f,   0.0f, 0.0f, 0.0f,   0.5f , 0.5f },
-        { -1.0f, 0.0f, 0.0f,   0.0f, 0.0f, 0.0f,   0.75f, 0.5f },
-        {  0.0f, 0.0f,-1.0f,   0.0f, 0.0f, 0.0f,   1.0f , 0.5f },
+        scaleVector(normal, RADIUS, vertex.position);
 
-        // Bottom verts
-        {  0.0f,-1.0f, 0.0f,   0.0f, 0.0f, 0.0f,   0.000f, 1.0f }, // 9
-        {  0.0f,-1.0f, 0.0f,   0.0f, 0.0f, 0.0f,   0.333f, 1.0f },
-        {  0.0f,-1.0f, 0.0f,   0.0f, 0.0f, 0.0f,   0.667f, 1.0f },
-        {  0.0f,-1.0f, 0.0f,   0.0f, 0.0f, 0.0f,   1.000f, 1.0f },
-    };
+        int index = i * FLOATS_IN_VERTEX;
+        tmpArray[index + 0] = vertex.position[0];
+        tmpArray[index + 1] = vertex.position[1];
+        tmpArray[index + 2] = vertex.position[2];
+        tmpArray[index + 3] = normal[0];
+        tmpArray[index + 4] = normal[1];
+        tmpArray[index + 5] = normal[2];
+        tmpArray[index + 6] = vertex.texCoords[0];
+        tmpArray[index + 7] = vertex.texCoords[1];
+    }
+    return &tmpArray[0];
+}
 
-    normalizePositionAndUseAsNormal(13, initVerts);
+int* toTriangleArray(std::vector<STriangle> triangles, int tmpArray[], int numOfTriangles) {
+    for (int i = 0; i < numOfTriangles; i++) {
+        STriangle triangle = triangles[i];
 
-    int initTriangles[][3] = {
-        { 0,4,5 }, { 1,5,6 }, { 2,6,7 }, { 3,7,8 }, // upper half of diamond
-        { 9,5,4 }, {10,6,5 }, {11,7,6 }, {12,8,7 }, // lower half of diamond
-    };
+        int index = i * INTS_IN_TRIANGLE;
+        tmpArray[index + 0] = triangle.indices[0];
+        tmpArray[index + 1] = triangle.indices[1];
+        tmpArray[index + 2] = triangle.indices[2];
+    }
+    return &tmpArray[0];
+}
 
-    return createMesh(13, &initVerts[0][0], 8, &initTriangles[0][0], material);
+gfx::BHandle createBallMesh(gfx::BHandle &material) {
+    std::vector<SVertex> verts;
+    // top verts
+    verts.push_back({ 0.0f, 1.0f, 0.0f,   0.000f, 0.0f}); // 0
+    verts.push_back({ 0.0f, 1.0f, 0.0f,   0.333f, 0.0f});
+    verts.push_back({ 0.0f, 1.0f, 0.0f,   0.667f, 0.0f});
+    verts.push_back({ 0.0f, 1.0f, 0.0f,   1.000f, 0.0f});
+    // center verts
+    verts.push_back({ 0.0f, 0.0f,-1.0f,   0.0f , 0.5f}); // 4
+    verts.push_back({ 1.0f, 0.0f, 0.0f,   0.25f, 0.5f});
+    verts.push_back({ 0.0f, 0.0f, 1.0f,   0.5f , 0.5f});
+    verts.push_back({-1.0f, 0.0f, 0.0f,   0.75f, 0.5f});
+    verts.push_back({ 0.0f, 0.0f,-1.0f,   1.0f , 0.5f});
+    // bottom verts
+    verts.push_back({ 0.0f,-1.0f, 0.0f,   0.000f, 1.0f}); // 9
+    verts.push_back({ 0.0f,-1.0f, 0.0f,   0.333f, 1.0f});
+    verts.push_back({ 0.0f,-1.0f, 0.0f,   0.667f, 1.0f});
+    verts.push_back({ 0.0f,-1.0f, 0.0f,   1.000f, 1.0f});
+
+    std::vector<STriangle> triangles;
+    // upper half of diamond
+    triangles.push_back({ 0,4,5});
+    triangles.push_back({ 1,5,6});
+    triangles.push_back({ 2,6,7});
+    triangles.push_back({ 3,7,8});
+    // lower half of diamond
+    triangles.push_back({ 9,5,4});
+    triangles.push_back({10,6,5});
+    triangles.push_back({11,7,6});
+    triangles.push_back({12,8,7});
+
+    subdivideTriangles(verts, triangles);
+
+    int numOfVerts = verts.size();
+    float *tmpVerts = new float[numOfVerts * FLOATS_IN_VERTEX];
+
+    int numOfTri = triangles.size();
+    int *tmpTri = new int[numOfTri * INTS_IN_TRIANGLE];
+
+    gfx::BHandle mesh = createMesh(
+        numOfVerts, toVertexArray(verts, tmpVerts, numOfVerts),
+        numOfTri, toTriangleArray(triangles, tmpTri, numOfTri),
+        material
+    );
+
+    delete[] tmpVerts;
+    delete[] tmpTri;
+
+    return mesh;
 }
