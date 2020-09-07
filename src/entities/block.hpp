@@ -11,6 +11,8 @@ struct SBlock : SEntity {
     EBlockType type;
     unsigned int hits;
     float size;
+
+    void onCollision();
 };
 
 SBlock createBlock(gfx::BHandle &blockMesh, EBlockType type, float position[3]);

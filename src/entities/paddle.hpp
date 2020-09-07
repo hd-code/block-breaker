@@ -6,6 +6,7 @@
 // -----------------------------------------------------------------------------
 
 struct SPaddle : SEntity {
+    float depth;
     float height;
     float width;
 };

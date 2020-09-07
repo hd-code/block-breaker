@@ -2,8 +2,8 @@
 
 // -----------------------------------------------------------------------------
 
-const float PADDLE_HEIGHT = 0.5f;
 const float PADDLE_WIDTH  = 2.0f;
+const float PADDLE_HEIGHT = 0.5f;
 const float PADDLE_DEPTH  = 1.0f;
 
 SPaddle createPaddle(gfx::BHandle &paddleMesh, float position[3]) {
@@ -16,16 +16,17 @@ SPaddle createPaddle(gfx::BHandle &paddleMesh, float position[3]) {
     paddle.position[1] = position[1];
     paddle.position[2] = position[2];
 
-    paddle.height = PADDLE_HEIGHT;
     paddle.width  = PADDLE_WIDTH;
+    paddle.height = PADDLE_HEIGHT;
+    paddle.depth  = PADDLE_DEPTH;
 
     return paddle;
 }
 
 gfx::BHandle createPaddleMesh(gfx::BHandle &material) {
-    float x = PADDLE_WIDTH  / 2.0f; // half width length
+    float x = PADDLE_WIDTH  / 2.0f; // half width  length
     float y = PADDLE_HEIGHT / 2.0f; // half height length
-    float z = PADDLE_DEPTH  / 2.0f; // half depth length
+    float z = PADDLE_DEPTH  / 2.0f; // half depth  length
 
     float vertices[][8] = {
         // front

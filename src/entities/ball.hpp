@@ -1,6 +1,8 @@
 #pragma once
 
+#include "block.hpp"
 #include "entity.hpp"
+#include "paddle.hpp"
 #include "yoshix.h"
 
 // -----------------------------------------------------------------------------
@@ -10,8 +12,10 @@ struct SBall : SEntity {
     float radius;
     float speed;
 
-    void changeDirection(ECollision collision);
     void move();
+
+    void handleCollision(SBlock &block);
+    void handleCollision(const SPaddle &paddle);
 };
 
 SBall createBall(gfx::BHandle ballMesh, float position[3]);

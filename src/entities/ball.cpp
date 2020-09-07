@@ -1,30 +1,55 @@
 #include "ball.hpp"
 
+#include <cmath>
 #include <vector>
 
 // -----------------------------------------------------------------------------
-
-const float RADIUS = 0.5f;
-const float SPEED = 0.01f;
-
-void SBall::changeDirection(ECollision collision) {
-    switch (collision) {
-        case TOP:
-        case BOTTOM:
-            this->direction[1] *= -1.0f; // flip y direction
-            break;
-        case LEFT:
-        case RIGHT:
-            this->direction[0] *= -1.0f; // flip x direction
-            break;
-    }
-}
 
 void SBall::move() {
     this->position[0] += this->speed * this->direction[0];
     this->position[1] += this->speed * this->direction[1];
     this->position[2] += this->speed * this->direction[2];
 }
+
+void SBall::handleCollision(SBlock &block) {
+    float xDiff = std::fabs(this->position[0] - block.position[0]);
+    float yDiff = std::fabs(this->position[1] - block.position[1]);
+    // float zDiff = std::fabs(this->position[2] - block.position[2]);
+
+    // collision
+    if (xDiff - this->radius - block.size < 0 &&
+        yDiff - this->radius - block.size < 0)
+    {
+        block.onCollision();
+        if (xDiff < yDiff) { // collision on top or bottom of block
+            this->direction[1] *= -1.0f; // flip y direction
+        } else { // collision on left or right of block
+            this->direction[0] *= -1.0f; // flip x direction
+        }
+    }
+}
+
+void SBall::handleCollision(const SPaddle &paddle) {
+    float xDiff = std::fabs(this->position[0] - paddle.position[0]);
+    float yDiff = std::fabs(this->position[1] - paddle.position[1]);
+    // float zDiff = std::fabs(this->position[2] - block.position[2]);
+
+    // collision
+    if (xDiff - this->radius - paddle.width  < 0 &&
+        yDiff - this->radius - paddle.height < 0)
+    {
+        if (xDiff < yDiff) { // collision on top or bottom of block
+            this->direction[1] *= -1.0f; // flip y direction
+        } else { // collision on left or right of block
+            this->direction[0] *= -1.0f; // flip x direction
+        }
+    }
+}
+
+// -----------------------------------------------------------------------------
+
+const float RADIUS = 0.5f;
+const float SPEED = 0.01f;
 
 SBall createBall(gfx::BHandle ballMesh, float position[3]) {
     SBall ball;
