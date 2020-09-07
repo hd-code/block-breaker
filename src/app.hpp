@@ -1,9 +1,11 @@
 #pragma once
 
-#include <vector>
-
 #include "entities/entity.hpp"
+#include "game.hpp"
+#include "key.hpp"
 #include "yoshix.h"
+
+#include <vector>
 
 using namespace gfx;
 
@@ -35,9 +37,9 @@ class CApplication : public IApplication {
         BHandle BlockMesh;
         BHandle PaddleMesh;
 
-        // Entities
-        std::vector<SEntity> StaticEntities;
-        std::vector<SEntity> DynamicEntities;
+        // Game
+        CGame* game;
+        EKey key;
 
     private:
         virtual bool InternOnStartup();
@@ -53,6 +55,7 @@ class CApplication : public IApplication {
         virtual bool InternOnCreateMeshes();
         virtual bool InternOnReleaseMeshes();
         virtual bool InternOnResize(int _Width, int _Height);
+        virtual bool InternOnKeyEvent(unsigned int key, bool isDown, bool altDown);
         virtual bool InternOnUpdate();
         virtual bool InternOnFrame();
 

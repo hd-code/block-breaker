@@ -4,6 +4,7 @@
 #include "entities/block.hpp"
 #include "entities/entity.hpp"
 #include "entities/paddle.hpp"
+#include "game.hpp"
 #include "yoshix.h"
 
 using namespace gfx;
@@ -33,23 +34,12 @@ CApplication::~CApplication() {}
 // -----------------------------------------------------------------------------
 
 bool CApplication::InternOnStartup() {
-    SEntity entities[] = {
-        { &this->BlockMesh, TEX_BALL, -5.0f, 0.0f, 0.0f },
-        { &this->BallMesh, TEX_BALL, -2.0f, 0.0f, 0.0f },
-        { &this->PaddleMesh, TEX_BALL, 2.0f, 0.0f, 0.0f },
-        { &this->BlockMesh, TEX_BALL, 5.0f, 0.0f, 0.0f },
-    };
-
-    int numOfEntities = sizeof(entities) / sizeof(SEntity);
-
-    for (int i = 0; i < numOfEntities; i++) {
-        this->DynamicEntities.push_back(entities[i]);
-    }
-
+    this->game = new CGame();
     return true;
 }
 
 bool CApplication::InternOnShutdown() {
+    this->game->~CGame();
     return true;
 }
 
@@ -76,6 +66,10 @@ bool CApplication::InternOnReleaseTextures() {
 
 // -----------------------------------------------------------------------------
 
+struct SGeneralVSBuffer {
+    float viewProjectionMatrix[16];
+};
+
 struct SEntityBuffer {
     float worldMatrix[16];
     float texture;
@@ -86,10 +80,6 @@ struct SEntityBuffer {
             this->worldMatrix[i] = worldMatrix[i];
         }
     }
-};
-
-struct SGeneralVSBuffer {
-    float viewProjectionMatrix[16];
 };
 
 struct SGeneralPSBuffer {
@@ -206,7 +196,26 @@ bool CApplication::InternOnResize(int _Width, int _Height) {
 
 // -----------------------------------------------------------------------------
 
+bool CApplication::InternOnKeyEvent(unsigned int key, bool isDown, bool altDown) {
+    switch (key) {
+    case 32: // space
+        this->key = EKey::SPACE;
+        break;
+    case 27: // left arrow
+        this->key = EKey::LEFT;
+        break;
+    case 26: // right arrow
+        this->key = EKey::RIGHT;
+    default:
+        this->key = EKey::NONE;
+    }
+
+    return true;
+}
+
 bool CApplication::InternOnUpdate() {
+    this->game->onUpdate(this->key);
+    this->key = EKey::NONE;
 
     return true;
 }
@@ -214,17 +223,22 @@ bool CApplication::InternOnUpdate() {
 // -----------------------------------------------------------------------------
 
 bool CApplication::InternOnFrame() {
-    for (auto &entity : this->StaticEntities) {
-        this->drawEntity(entity);
+    std::vector<SEntity*> staticEntities  = this->game->getStaticEntities();
+    std::vector<SEntity*> dynamicEntities = this->game->getDynamicEntities();;
+
+    for (auto &entity : staticEntities) {
+        this->drawEntity(*entity);
     }
 
-    for (auto &entity : this->DynamicEntities) {
-        entity.updateWorldMatrix();
-        this->drawEntity(entity);
+    for (auto &entity : dynamicEntities) {
+        entity->updateWorldMatrix();
+        this->drawEntity(*entity);
     }
 
     return true;
 }
+
+// -----------------------------------------------------------------------------
 
 void CApplication::drawEntity(SEntity &entity) {
     SEntityBuffer buffer;

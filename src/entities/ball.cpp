@@ -55,12 +55,13 @@ SBall createBall(gfx::BHandle ballMesh, float position[3]) {
     SBall ball;
 
     ball.mesh = &ballMesh;
-    ball.texture = TEX_BALL;
+    ball.texture = BALL;
 
     ball.position[0] = position[0];
     ball.position[1] = position[1];
     ball.position[2] = position[2];
 
+    ball.direction[1] = -1.0f;
     ball.direction[2] = 0.0f;
     ball.radius = RADIUS;
     ball.speed  = SPEED;

@@ -10,7 +10,7 @@ SPaddle createPaddle(gfx::BHandle &paddleMesh, float position[3]) {
     SPaddle paddle;
 
     paddle.mesh = &paddleMesh;
-    paddle.texture = TEX_PADDLE;
+    paddle.texture = ETexture::PADDLE;
 
     paddle.position[0] = position[0];
     paddle.position[1] = position[1];

@@ -3,11 +3,11 @@
 // -----------------------------------------------------------------------------
 
 void SBlock::onCollision() {
-    if (this->type != EBlockType::BLOCK_BED_ROCK) {
+    if (this->type != EBlockType::BED_ROCK) {
         this->hits += 1;
     }
-    if (this->type == EBlockType::BLOCK_HARD) {
-        this->texture = ETexture::TEX_BLOCK_CRACKED;
+    if (this->type == EBlockType::HARD) {
+        this->texture = ETexture::BLOCK_CRACKED;
     }
 }
 
@@ -17,10 +17,10 @@ const float BLOCK_SIZE = 1.0f;
 
 ETexture getBlockTexture(EBlockType type) {
     switch (type) {
-        case BLOCK_BED_ROCK: return TEX_BED_ROCK;
-        case BLOCK_NORMAL:   return TEX_BLOCK;
-        case BLOCK_HARD:     return TEX_BLOCK_HARD;
-        default: return TEX_BED_ROCK;
+        case EBlockType::BED_ROCK: return ETexture::BED_ROCK;
+        case EBlockType::NORMAL:   return ETexture::BLOCK;
+        case EBlockType::HARD:     return ETexture::BLOCK_HARD;
+        default: return ETexture::BED_ROCK;
     }
 }
 

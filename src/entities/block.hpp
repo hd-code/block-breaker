@@ -5,7 +5,7 @@
 
 // -----------------------------------------------------------------------------
 
-enum EBlockType { BLOCK_BED_ROCK, BLOCK_NORMAL, BLOCK_HARD };
+enum EBlockType { BED_ROCK, NORMAL, HARD };
 
 struct SBlock : SEntity {
     EBlockType type;
