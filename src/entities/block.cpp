@@ -38,8 +38,12 @@ SBlock createBlock(gfx::BHandle &blockMesh, EBlockType type, float position[3]) 
     block.size = BLOCK_SIZE;
     block.type = type;
 
+    block.updateWorldMatrix();
+
     return block;
 }
+
+// --- Mesh --------------------------------------------------------------------
 
 gfx::BHandle createBlockMesh(gfx::BHandle &material) {
     float e = BLOCK_SIZE / 2.0f; // half-edge length

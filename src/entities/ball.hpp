@@ -12,12 +12,17 @@ struct SBall : SEntity {
     float radius;
     float speed;
 
+    bool handleCollision(SBlock &block);
+    bool handleCollision(const SPaddle &paddle);
+
+    bool isOnGround(float groundLevel);
+
     void move();
 
-    void handleCollision(SBlock &block);
-    void handleCollision(const SPaddle &paddle);
+private:
+    void changeDirection(bool horizontalCollision);
 };
 
-SBall createBall(gfx::BHandle ballMesh, float position[3]);
+SBall createBall(gfx::BHandle* ballMesh);
 
 gfx::BHandle createBallMesh(gfx::BHandle &material);

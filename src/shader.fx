@@ -23,6 +23,7 @@ cbuffer VSBuffer : register(b1) {
 cbuffer PSBuffer : register(b0) {
     float3 CameraPos;
     float3 LightDir;
+    float3 AmbientLight;
 }
 
 // --- Data Types --------------------------------------------------------------
@@ -61,13 +62,23 @@ float4 PShader(PSInput input) : SV_Target {
 
     float3 normal = normalize(input.normal);
 
-    float4 ambientLight  = float4(0.1f, 0.1f, 0.1f, 1.0f);
+    float4 ambientLight  = float4(AmbientLight, 0.0f);
 	float4 diffuseLight  = max(dot(normal, lightVec), 0.0f);
     float4 specularLight = pow(max(dot(normal, halfVec), 0.0f), 110.0f);
 	
     float4 light = ambientLight + diffuseLight + specularLight;
 
     Texture2D tex = Tex0;
+    switch (TextureIndex) {
+        case 0: tex = Tex0;
+        case 1: tex = Tex1;
+        case 2: tex = Tex2;
+        case 3: tex = Tex3;
+        case 4: tex = Tex4;
+        case 5: tex = Tex5;
+        default: tex = Tex0;
+    }
+
     return tex.Sample(Sampler, input.texCoords) * light;
 }
 

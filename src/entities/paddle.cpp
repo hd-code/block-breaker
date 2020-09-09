@@ -2,26 +2,49 @@
 
 // -----------------------------------------------------------------------------
 
+void SPaddle::move(EKey key, float leftLimit, float rightLimit) {
+    switch (key) {
+    case EKey::LEFT:
+        float newX = this->position[0] - this->speed;
+        if (newX > leftLimit) {
+            this->position[0];
+            this->updateWorldMatrix();
+        }
+        break;
+
+    case EKey::RIGHT:
+        float newX = this->position[0] + this->speed;
+        if (newX < rightLimit) {
+            this->position[0];
+            this->updateWorldMatrix();
+        }
+        break;
+    }
+}
+
+// -----------------------------------------------------------------------------
+
 const float PADDLE_WIDTH  = 2.0f;
 const float PADDLE_HEIGHT = 0.5f;
 const float PADDLE_DEPTH  = 1.0f;
 
-SPaddle createPaddle(gfx::BHandle &paddleMesh, float position[3]) {
+SPaddle createPaddle(gfx::BHandle* paddleMesh) {
     SPaddle paddle;
 
-    paddle.mesh = &paddleMesh;
+    paddle.mesh = paddleMesh;
     paddle.texture = ETexture::PADDLE;
 
-    paddle.position[0] = position[0];
-    paddle.position[1] = position[1];
-    paddle.position[2] = position[2];
+    paddle.position[0] = 0.0f;
+    paddle.position[1] = 0.0f;
+    paddle.position[2] = 0.0f;
 
     paddle.width  = PADDLE_WIDTH;
     paddle.height = PADDLE_HEIGHT;
-    paddle.depth  = PADDLE_DEPTH;
 
     return paddle;
 }
+
+// --- Mesh --------------------------------------------------------------------
 
 gfx::BHandle createPaddleMesh(gfx::BHandle &material) {
     float x = PADDLE_WIDTH  / 2.0f; // half width  length

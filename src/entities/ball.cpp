@@ -9,40 +9,51 @@ void SBall::move() {
     this->position[0] += this->speed * this->direction[0];
     this->position[1] += this->speed * this->direction[1];
     this->position[2] += this->speed * this->direction[2];
+
+    this->updateWorldMatrix();
 }
 
-void SBall::handleCollision(SBlock &block) {
+bool SBall::handleCollision(SBlock &block) {
     float xDiff = std::fabs(this->position[0] - block.position[0]);
     float yDiff = std::fabs(this->position[1] - block.position[1]);
-    // float zDiff = std::fabs(this->position[2] - block.position[2]);
+
+    xDiff -= this->radius - block.size;
+    yDiff -= this->radius - block.size;
 
     // collision
-    if (xDiff - this->radius - block.size < 0 &&
-        yDiff - this->radius - block.size < 0)
-    {
-        block.onCollision();
-        if (xDiff < yDiff) { // collision on top or bottom of block
-            this->direction[1] *= -1.0f; // flip y direction
-        } else { // collision on left or right of block
-            this->direction[0] *= -1.0f; // flip x direction
-        }
+    if (xDiff <= 0 && yDiff <= 0) {
+        this->changeDirection(xDiff > yDiff);
+        return true;
     }
+
+    return false;
 }
 
-void SBall::handleCollision(const SPaddle &paddle) {
+bool SBall::handleCollision(const SPaddle &paddle) {
     float xDiff = std::fabs(this->position[0] - paddle.position[0]);
     float yDiff = std::fabs(this->position[1] - paddle.position[1]);
-    // float zDiff = std::fabs(this->position[2] - block.position[2]);
+
+    xDiff -= this->radius - paddle.width;
+    yDiff -= this->radius - paddle.height;
 
     // collision
-    if (xDiff - this->radius - paddle.width  < 0 &&
-        yDiff - this->radius - paddle.height < 0)
-    {
-        if (xDiff < yDiff) { // collision on top or bottom of block
-            this->direction[1] *= -1.0f; // flip y direction
-        } else { // collision on left or right of block
-            this->direction[0] *= -1.0f; // flip x direction
-        }
+    if (xDiff <= 0 && yDiff <= 0) {
+        this->changeDirection(xDiff > yDiff);
+        return true;
+    }
+
+    return false;
+}
+
+bool SBall::isOnGround(float groundLevel) {
+    return groundLevel > this->position[1];
+}
+
+void SBall::changeDirection(bool horizontalCollision) {
+    if (horizontalCollision) {
+        this->direction[0] *= -1.0f; // flip x direction
+    } else {
+        this->direction[1] *= -1.0f; // flip y direction
     }
 }
 
@@ -51,25 +62,26 @@ void SBall::handleCollision(const SPaddle &paddle) {
 const float RADIUS = 0.5f;
 const float SPEED = 0.01f;
 
-SBall createBall(gfx::BHandle ballMesh, float position[3]) {
+SBall createBall(gfx::BHandle* ballMesh) {
     SBall ball;
 
-    ball.mesh = &ballMesh;
-    ball.texture = BALL;
+    ball.mesh = ballMesh;
+    ball.texture = ETexture::BALL;
 
-    ball.position[0] = position[0];
-    ball.position[1] = position[1];
-    ball.position[2] = position[2];
+    ball.position[0] = 0.0f;
+    ball.position[1] = 0.0f;
+    ball.position[2] = 0.0f;
 
     ball.direction[1] = -1.0f;
     ball.direction[2] = 0.0f;
+
     ball.radius = RADIUS;
     ball.speed  = SPEED;
 
     return ball;
 }
 
-// -----------------------------------------------------------------------------
+// --- Mesh --------------------------------------------------------------------
 
 struct SVertex {
     float position[3];

@@ -18,24 +18,25 @@ class CApplication : public IApplication {
 
     private:
         // Textures
-        BHandle Textures[6];
+        const static int NUM_OF_TEXTURES = 6;
+        BHandle textures[NUM_OF_TEXTURES];
 
         // Constant Buffers
-        BHandle EntityBuffer;
-        BHandle GeneralVSBuffer;
-        BHandle GeneralPSBuffer;
+        BHandle entityBuffer;
+        BHandle generalVSBuffer;
+        BHandle generalPSBuffer;
 
         // Shaders
-        BHandle VertexShader;
-        BHandle PixelShader;
+        BHandle vertexShader;
+        BHandle pixelShader;
 
         // Materials
-        BHandle Material;
+        BHandle material;
 
         // Meshes
-        BHandle BallMesh;
-        BHandle BlockMesh;
-        BHandle PaddleMesh;
+        BHandle ballMesh;
+        BHandle blockMesh;
+        BHandle paddleMesh;
 
         // Game
         CGame* game;
@@ -58,6 +59,4 @@ class CApplication : public IApplication {
         virtual bool InternOnKeyEvent(unsigned int key, bool isDown, bool altDown);
         virtual bool InternOnUpdate();
         virtual bool InternOnFrame();
-
-        void drawEntity(SEntity &entity);
 };

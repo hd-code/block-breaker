@@ -1,5 +1,6 @@
 #include "app.hpp"
 
+#include "camera.hpp"
 #include "entities/ball.hpp"
 #include "entities/block.hpp"
 #include "entities/entity.hpp"
@@ -13,20 +14,22 @@ using namespace gfx;
 
 CApplication::CApplication() :
     // Textures
-      Textures()
+      textures()
     // Constant Buffers
-    , EntityBuffer(nullptr)
-    , GeneralVSBuffer(nullptr)
-    , GeneralPSBuffer(nullptr)
+    , entityBuffer(nullptr)
+    , generalVSBuffer(nullptr)
+    , generalPSBuffer(nullptr)
     // Shaders
-    , VertexShader(nullptr)
-    , PixelShader(nullptr)
+    , vertexShader(nullptr)
+    , pixelShader(nullptr)
     // Materials
-    , Material(nullptr)
+    , material(nullptr)
     // Meshes
-    , BallMesh(nullptr)
-    , BlockMesh(nullptr)
-    , PaddleMesh(nullptr)
+    , ballMesh(nullptr)
+    , blockMesh(nullptr)
+    , paddleMesh(nullptr)
+    // Game
+    , game(nullptr)
 {}
 
 CApplication::~CApplication() {}
@@ -34,7 +37,7 @@ CApplication::~CApplication() {}
 // -----------------------------------------------------------------------------
 
 bool CApplication::InternOnStartup() {
-    this->game = new CGame();
+    this->game = new CGame(&this->ballMesh, &this->blockMesh, &this->paddleMesh);
     return true;
 }
 
@@ -46,19 +49,19 @@ bool CApplication::InternOnShutdown() {
 // -----------------------------------------------------------------------------
 
 bool CApplication::InternOnCreateTextures() {
-    CreateTexture("..\\data\\ball.png" , &this->Textures[0]);
-    CreateTexture("..\\data\\paddle.jpg" , &this->Textures[1]);
-    CreateTexture("..\\data\\bed-rock.jpg" , &this->Textures[2]);
-    CreateTexture("..\\data\\moon.dds" , &this->Textures[3]);
-    CreateTexture("..\\data\\block-hard.jpg" , &this->Textures[4]);
-    CreateTexture("..\\data\\block-cracked.jpg" , &this->Textures[5]);
+    CreateTexture("..\\data\\ball.png", &this->textures[0]);
+    CreateTexture("..\\data\\paddle.jpg", &this->textures[1]);
+    CreateTexture("..\\data\\bed-rock.jpg", &this->textures[2]);
+    CreateTexture("..\\data\\moon.dds", &this->textures[3]);
+    CreateTexture("..\\data\\block-hard.jpg", &this->textures[4]);
+    CreateTexture("..\\data\\block-cracked.jpg", &this->textures[5]);
 
     return true;
 }
 
 bool CApplication::InternOnReleaseTextures() {
-    for (int i = 0; i < 6; i++) {
-        ReleaseTexture(this->Textures[i]);
+    for (int i = 0; i < NUM_OF_TEXTURES; i++) {
+        ReleaseTexture(this->textures[i]);
     }
 
     return true;
@@ -70,16 +73,10 @@ struct SGeneralVSBuffer {
     float viewProjectionMatrix[16];
 };
 
-struct SEntityBuffer {
+struct SEntityVSBuffer {
     float worldMatrix[16];
     float texture;
     float _padding[3];
-
-    void setWorldMatrix(float worldMatrix[16]) {
-        for (int i = 0; i < 16; i++) {
-            this->worldMatrix[i] = worldMatrix[i];
-        }
-    }
 };
 
 struct SGeneralPSBuffer {
@@ -87,20 +84,22 @@ struct SGeneralPSBuffer {
     float _padding0;
     float lightDir[3];
     float _padding1;
+    float ambientLight[3];
+    float _padding2;
 };
 
 bool CApplication::InternOnCreateConstantBuffers() {
-    CreateConstantBuffer(sizeof(SGeneralVSBuffer), &this->GeneralVSBuffer);
-    CreateConstantBuffer(sizeof(SEntityBuffer), &this->EntityBuffer);
-    CreateConstantBuffer(sizeof(SGeneralPSBuffer), &this->GeneralPSBuffer);
+    CreateConstantBuffer(sizeof(SGeneralVSBuffer), &this->generalVSBuffer);
+    CreateConstantBuffer(sizeof(SEntityVSBuffer), &this->entityBuffer);
+    CreateConstantBuffer(sizeof(SGeneralPSBuffer), &this->generalPSBuffer);
 
     return true; 
 }
 
 bool CApplication::InternOnReleaseConstantBuffers() {
-    ReleaseConstantBuffer(this->GeneralVSBuffer);
-    ReleaseConstantBuffer(this->EntityBuffer);
-    ReleaseConstantBuffer(this->GeneralPSBuffer);
+    ReleaseConstantBuffer(this->generalVSBuffer);
+    ReleaseConstantBuffer(this->entityBuffer);
+    ReleaseConstantBuffer(this->generalPSBuffer);
 
     return true;
 }
@@ -108,15 +107,15 @@ bool CApplication::InternOnReleaseConstantBuffers() {
 // -----------------------------------------------------------------------------
 
 bool CApplication::InternOnCreateShader() {
-    CreateVertexShader("..\\src\\shader.fx", "VShader", &this->VertexShader);
-    CreatePixelShader ("..\\src\\shader.fx", "PShader", &this->PixelShader);
+    CreateVertexShader("..\\src\\shader.fx", "VShader", &this->vertexShader);
+    CreatePixelShader ("..\\src\\shader.fx", "PShader", &this->pixelShader);
 
     return true;
 }
 
 bool CApplication::InternOnReleaseShader() {
-    ReleaseVertexShader(this->VertexShader);
-    ReleasePixelShader (this->PixelShader);
+    ReleaseVertexShader(this->vertexShader);
+    ReleasePixelShader (this->pixelShader);
 
     return true;
 }
@@ -124,21 +123,21 @@ bool CApplication::InternOnReleaseShader() {
 // -----------------------------------------------------------------------------
 
 bool CApplication::InternOnCreateMaterials() {
-    BHandle vsBuffers[2] = { this->GeneralVSBuffer, this->EntityBuffer };
-    BHandle psBuffers[1] = { this->GeneralPSBuffer };
+    BHandle vsBuffers[2] = { this->generalVSBuffer, this->entityBuffer };
+    BHandle psBuffers[1] = { this->generalPSBuffer };
 
-    this->Material = createMaterial(
-        6, this->Textures,
+    this->material = createMaterial(
+        NUM_OF_TEXTURES, this->textures,
         2, vsBuffers,
         1, psBuffers,
-        this->VertexShader, this->PixelShader
+        this->vertexShader, this->pixelShader
     );
 
     return true;
 }
 
 bool CApplication::InternOnReleaseMaterials() {
-    ReleaseMaterial(this->Material);
+    ReleaseMaterial(this->material);
 
     return true;
 }
@@ -146,50 +145,43 @@ bool CApplication::InternOnReleaseMaterials() {
 // -----------------------------------------------------------------------------
 
 bool CApplication::InternOnCreateMeshes() {
-    this->BallMesh   = createBallMesh(this->Material);
-    this->BlockMesh  = createBlockMesh(this->Material);
-    this->PaddleMesh = createPaddleMesh(this->Material);
+    this->ballMesh   = createBallMesh(this->material);
+    this->blockMesh  = createBlockMesh(this->material);
+    this->paddleMesh = createPaddleMesh(this->material);
 
     return true;
 }
 
 bool CApplication::InternOnReleaseMeshes() {
-    ReleaseMesh(this->BallMesh);
-    ReleaseMesh(this->BlockMesh);
-    ReleaseMesh(this->PaddleMesh);
+    ReleaseMesh(this->ballMesh);
+    ReleaseMesh(this->blockMesh);
+    ReleaseMesh(this->paddleMesh);
 
     return true;
 }
 
 // -----------------------------------------------------------------------------
 
-bool CApplication::InternOnResize(int _Width, int _Height) {
-    float cameraPosition[3] = { 0.0f, 0.0f, -8.0f };
-    float cameraTarget[3]   = { 0.0f, 0.0f, 0.0f };
-    float cameraUp[3]       = { 0.0f, 1.0f, 0.0f };
-
-    float lenseAngle = 60.0f;
-    float near = 0.1f;
-    float far  = 100.0f;
-    
-    float lightDir[3] = { -1.0f, -0.7f, 2.0f };
+bool CApplication::InternOnResize(int width, int height) {
+    SCamera cam;
+    SLight light;
 
     float viewMatrix[16];
-    GetViewMatrix(cameraPosition, cameraTarget, cameraUp, viewMatrix);
+    GetViewMatrix(cam.position, cam.target, cam.up, viewMatrix);
 
     float projectionMatrix[16];
-    GetProjectionMatrix(lenseAngle, (float) _Width / (float) _Height, near, far, projectionMatrix);
+    float aspectRatio = (float) width / (float) height;
+    GetProjectionMatrix(cam.aperture, aspectRatio, cam.nearClip, cam.farClip, projectionMatrix);
 
     SGeneralVSBuffer vsBuffer;
     MulMatrix(viewMatrix, projectionMatrix, vsBuffer.viewProjectionMatrix);
-    UploadConstantBuffer(&vsBuffer, this->GeneralVSBuffer);
+    UploadConstantBuffer(&vsBuffer, this->generalVSBuffer);
 
     SGeneralPSBuffer psBuffer;
-    psBuffer.cameraPosition[0] = cameraPosition[0];
-    psBuffer.cameraPosition[1] = cameraPosition[1];
-    psBuffer.cameraPosition[2] = cameraPosition[2];
-    GetNormalizedVector(lightDir, psBuffer.lightDir);
-    UploadConstantBuffer(&psBuffer, this->GeneralPSBuffer);
+    memcpy(psBuffer.cameraPosition, cam.position, 3);
+    GetNormalizedVector(light.direction, psBuffer.lightDir);
+    memcpy(psBuffer.ambientLight, light.ambient, 3);
+    UploadConstantBuffer(&psBuffer, this->generalPSBuffer);
 
     return true;
 }
@@ -198,14 +190,20 @@ bool CApplication::InternOnResize(int _Width, int _Height) {
 
 bool CApplication::InternOnKeyEvent(unsigned int key, bool isDown, bool altDown) {
     switch (key) {
-    case 32: // space
-        this->key = EKey::SPACE;
+    case KEY_SPACE:
+        if (!isDown) { // trigger only when key was released
+            this->key = EKey::SPACE;
+        }
         break;
-    case 27: // left arrow
+
+    case KEY_LEFT:
         this->key = EKey::LEFT;
         break;
-    case 26: // right arrow
+
+    case KEY_RIGHT:
         this->key = EKey::RIGHT;
+        break;
+
     default:
         this->key = EKey::NONE;
     }
@@ -223,27 +221,15 @@ bool CApplication::InternOnUpdate() {
 // -----------------------------------------------------------------------------
 
 bool CApplication::InternOnFrame() {
-    std::vector<SEntity*> staticEntities  = this->game->getStaticEntities();
-    std::vector<SEntity*> dynamicEntities = this->game->getDynamicEntities();;
+    SEntityVSBuffer buffer;
+    std::vector<SEntity*>* entities  = this->game->getEntities();
 
-    for (auto &entity : staticEntities) {
-        this->drawEntity(*entity);
-    }
-
-    for (auto &entity : dynamicEntities) {
-        entity->updateWorldMatrix();
-        this->drawEntity(*entity);
+    for (auto entity : *entities) {
+        memcpy(buffer.worldMatrix, entity->worldMatrix, 16);
+        buffer.texture = float(entity->texture);
+        UploadConstantBuffer(&buffer, this->entityBuffer);
+        DrawMesh(*entity->mesh);
     }
 
     return true;
-}
-
-// -----------------------------------------------------------------------------
-
-void CApplication::drawEntity(SEntity &entity) {
-    SEntityBuffer buffer;
-    buffer.setWorldMatrix(entity.worldMatrix);
-    buffer.texture = float(entity.texture);
-    UploadConstantBuffer(&buffer, this->EntityBuffer);
-    DrawMesh(*entity.mesh);
 }
