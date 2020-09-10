@@ -17,9 +17,10 @@ CApplication::CApplication() :
     // Textures
       textures()
     // Constant Buffers
-    , entityBuffer(nullptr)
     , generalVSBuffer(nullptr)
     , generalPSBuffer(nullptr)
+    , entityVSBuffer(nullptr)
+    , entityPSBuffer(nullptr)
     // Shaders
     , vertexShader(nullptr)
     , pixelShader(nullptr)
@@ -75,12 +76,6 @@ struct SGeneralVSBuffer {
     float viewProjectionMatrix[16];
 };
 
-struct SEntityVSBuffer {
-    float worldMatrix[16];
-    float texture;
-    float _padding[3];
-};
-
 struct SGeneralPSBuffer {
     float cameraPosition[3];
     float _padding0;
@@ -90,18 +85,29 @@ struct SGeneralPSBuffer {
     float _padding2;
 };
 
+struct SEntityVSBuffer {
+    float worldMatrix[16];
+};
+
+struct SEntityPSBuffer {
+    float texture;
+    float _padding[3];
+};
+
 bool CApplication::InternOnCreateConstantBuffers() {
     CreateConstantBuffer(sizeof(SGeneralVSBuffer), &this->generalVSBuffer);
-    CreateConstantBuffer(sizeof(SEntityVSBuffer), &this->entityBuffer);
     CreateConstantBuffer(sizeof(SGeneralPSBuffer), &this->generalPSBuffer);
+    CreateConstantBuffer(sizeof(SEntityVSBuffer), &this->entityVSBuffer);
+    CreateConstantBuffer(sizeof(SEntityPSBuffer), &this->entityPSBuffer);
 
     return true; 
 }
 
 bool CApplication::InternOnReleaseConstantBuffers() {
     ReleaseConstantBuffer(this->generalVSBuffer);
-    ReleaseConstantBuffer(this->entityBuffer);
     ReleaseConstantBuffer(this->generalPSBuffer);
+    ReleaseConstantBuffer(this->entityVSBuffer);
+    ReleaseConstantBuffer(this->entityPSBuffer);
 
     return true;
 }
@@ -125,13 +131,13 @@ bool CApplication::InternOnReleaseShader() {
 // -----------------------------------------------------------------------------
 
 bool CApplication::InternOnCreateMaterials() {
-    BHandle vsBuffers[2] = { this->generalVSBuffer, this->entityBuffer };
-    BHandle psBuffers[1] = { this->generalPSBuffer };
+    BHandle vsBuffers[2] = { this->generalVSBuffer, this->entityVSBuffer };
+    BHandle psBuffers[2] = { this->generalPSBuffer, this->entityPSBuffer };
 
     this->material = createMaterial(
         NUM_OF_TEXTURES, this->textures,
         2, vsBuffers,
-        1, psBuffers,
+        2, psBuffers,
         this->vertexShader, this->pixelShader
     );
 
@@ -229,13 +235,18 @@ bool CApplication::InternOnUpdate() {
 // -----------------------------------------------------------------------------
 
 bool CApplication::InternOnFrame() {
-    SEntityVSBuffer buffer;
-    std::vector<SEntity*>* entities  = this->game->getEntities();
+    SEntityVSBuffer vsBuffer;
+    SEntityPSBuffer psBuffer;
 
+    std::vector<SEntity*>* entities  = this->game->getEntities();
+    
     for (auto entity : *entities) {
-        memcpy(buffer.worldMatrix, entity->worldMatrix, sizeof(float)*16);
-        buffer.texture = float(entity->texture);
-        UploadConstantBuffer(&buffer, this->entityBuffer);
+        memcpy(vsBuffer.worldMatrix, entity->worldMatrix, sizeof(float)*16);
+        psBuffer.texture = float(entity->texture);
+
+        UploadConstantBuffer(&vsBuffer, this->entityVSBuffer);
+        UploadConstantBuffer(&psBuffer, this->entityPSBuffer);
+
         DrawMesh(*entity->mesh);
     }
 
