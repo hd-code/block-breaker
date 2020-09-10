@@ -1,62 +1,95 @@
 // --- Textures ----------------------------------------------------------------
 
-Texture2D Texture : register(t0);
-sampler   Sampler : register(s0);
+sampler Sampler : register(s0);
+
+Texture2D Tex0 : register(t0);
+Texture2D Tex1 : register(t1);
+Texture2D Tex2 : register(t2);
+Texture2D Tex3 : register(t3);
+Texture2D Tex4 : register(t4);
+Texture2D Tex5 : register(t5);
 
 // --- Constant Buffers --------------------------------------------------------
 
 cbuffer VSBuffer : register(b0) {
+    float4x4 ViewProjectionMatrix;
+}
+
+cbuffer VSBuffer : register(b1) {
     float4x4 WorldMatrix;
 };
 
-cbuffer VSBuffer : register(b1) {
-    float4x4 ViewProjectionMatrix;
+cbuffer PSBuffer : register(b0) {
+    float3 CameraPos;
+    float3 LightDir;
+    float3 AmbientLight;
+}
+
+cbuffer PSBuffer : register(b1) {
+    float TextureIndex;
 }
 
 // --- Data Types --------------------------------------------------------------
 
 struct VSInput {
-    float3 position : POSITION;
+    float3 position  : POSITION;
+    float3 normal    : NORMAL;
     float2 texCoords : TEXCOORD;
-    float3 normal : NORMAL;
 };
 
 struct PSInput {
-    float4 position : SV_POSITION;
-    float3 normal : NORMAL;
+    float4 position  : SV_POSITION;
+    float3 normal    : NORMAL;
     float2 texCoords : TEXCOORD0;
-    float3 lightDir : TEXCOORD1;
 };
 
 // --- Vertex Shader -----------------------------------------------------------
 
 PSInput VShader(VSInput input) {
     float4 worldSpacePosition = mul(float4(input.position, 1.0f), WorldMatrix);
-    float3 lightPos = float3(1.0f, 10.0f, -10.0f);
 
-    PSInput result    = (PSInput) 0;
-    result.position = mul(worldSpacePosition, ViewProjectionMatrix);
-    result.normal = mul(input.normal, (float3x3)WorldMatrix);
+    PSInput result   = (PSInput) 0;
+    result.position  = mul(worldSpacePosition, ViewProjectionMatrix);
+    result.normal    = mul(input.normal, (float3x3)WorldMatrix);
     result.texCoords = input.texCoords;
-    result.lightDir = normalize(lightPos - (float3)worldSpacePosition);
 
     return result;
 }
 
-// -----------------------------------------------------------------------------
-// Pixel Shader
-// -----------------------------------------------------------------------------
+// --- Pixel Shader ------------------------------------------------------------
+
 float4 PShader(PSInput input) : SV_Target {
-    float3 lightDir = normalize(input.lightDir);
-    float3 normal   = normalize(input.normal);
+    float3 lightVec = normalize(-LightDir);
+    float3 viewVec  = normalize(CameraPos - input.position.xyz);
+    float3 halfVec  = normalize(lightVec + viewVec);
 
-    float4 AmbientLight  = float4(0.1f, 0.1f, 0.1f, 1.0f);
-	float4 DiffuseLight  = max(dot(normal, lightDir), 0.0f);
-    // float4 SpecularLight = pow(max(dot(WSNormal, WSHalf), 0.0f), 2.0f);
+    float3 normal = normalize(input.normal);
+
+    float4 ambientLight  = float4(0.1f, 0.1f, 0.1f, 1.0f);
+	float4 diffuseLight  = max(dot(normal, lightVec), 0.0f);
+    float4 specularLight = pow(max(dot(normal, halfVec), 0.0f), 110.0f);
 	
-    float4 Light = AmbientLight + DiffuseLight; // + SpecularLight;
+    float4 light = ambientLight + diffuseLight + specularLight;
 
-    return Texture.Sample(Sampler, input.texCoords) * Light;
+    switch (TextureIndex) {
+        case 0: return Tex0.Sample(Sampler, input.texCoords) * light;
+        case 1: return Tex1.Sample(Sampler, input.texCoords) * light;
+        case 2: return Tex2.Sample(Sampler, input.texCoords) * light;
+        case 3: return Tex3.Sample(Sampler, input.texCoords) * light;
+        case 4: return Tex4.Sample(Sampler, input.texCoords) * light;
+        case 5: return Tex5.Sample(Sampler, input.texCoords) * light;
+        default: return Tex0.Sample(Sampler, input.texCoords) * light;
+    }
 }
 
-
+// Texture2D getTexture() {
+//     switch (TextureIndex) {
+//         case 0: return Tex0;
+//         case 1: return Tex1;
+//         case 2: return Tex2;
+//         case 3: return Tex3;
+//         case 4: return Tex4;
+//         case 5: return Tex5;
+//         default: return Tex0;
+//     }
+// }

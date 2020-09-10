@@ -1,10 +1,8 @@
 #pragma once
 
-// -----------------------------------------------------------------------------
-
-#include "entity.hpp"
-#include "meshes.hpp"
-
+#include "entities/entity.hpp"
+#include "game/game.hpp"
+#include "key.hpp"
 #include "yoshix.h"
 
 #include <vector>
@@ -19,30 +17,31 @@ class CApplication : public IApplication {
         virtual ~CApplication();
 
     private:
-        float m_FieldOfViewY;             // Vertical view angle of the camera
-
         // Textures
-        BHandle Texture;
+        const static int NUM_OF_TEXTURES = 6;
+        BHandle textures[NUM_OF_TEXTURES];
 
         // Constant Buffers
-        BHandle CB_VS_WorldMatrix;
-        BHandle CB_VS_ViewProjectionMatrix;
+        BHandle generalVSBuffer;
+        BHandle generalPSBuffer;
+        BHandle entityVSBuffer;
+        BHandle entityPSBuffer;
 
         // Shaders
-        BHandle VertexShader;
-        BHandle PixelShader;
+        BHandle vertexShader;
+        BHandle pixelShader;
 
         // Materials
-        BHandle Material;
+        BHandle material;
 
         // Meshes
-        BHandle TriangleMesh;
-        BHandle CubeMesh;
-        BHandle SphereMesh;
+        BHandle ballMesh;
+        BHandle blockMesh;
+        BHandle paddleMesh;
 
-        // Entities
-        std::vector<SEntity> staticEntities;
-        std::vector<SEntity> dynamicEntities;
+        // Game
+        CGame* game;
+        EKey key;
 
     private:
         virtual bool InternOnStartup();
@@ -58,6 +57,7 @@ class CApplication : public IApplication {
         virtual bool InternOnCreateMeshes();
         virtual bool InternOnReleaseMeshes();
         virtual bool InternOnResize(int _Width, int _Height);
+        virtual bool InternOnKeyEvent(unsigned int key, bool isDown, bool altDown);
         virtual bool InternOnUpdate();
         virtual bool InternOnFrame();
 };

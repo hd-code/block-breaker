@@ -1,24 +1,38 @@
 #include "app.hpp"
-#include "entity.hpp"
-#include "meshes.hpp"
 
+#include "camera.hpp"
+#include "entities/ball.hpp"
+#include "entities/block.hpp"
+#include "entities/entity.hpp"
+#include "entities/paddle.hpp"
 #include "yoshix.h"
+
+#include <iostream>
 
 using namespace gfx;
 
 // -----------------------------------------------------------------------------
 
-CApplication::CApplication()
-    : m_FieldOfViewY(60.0f)        // Set the vertical view angle of the camera to 60 degrees.
-    , Texture(nullptr)
-    , CB_VS_WorldMatrix(nullptr)
-    , CB_VS_ViewProjectionMatrix(nullptr)
-    , VertexShader(nullptr)
-    , PixelShader(nullptr)
-    , Material(nullptr)
-    , TriangleMesh(nullptr)
-    , CubeMesh(nullptr)
-    , SphereMesh(nullptr)
+CApplication::CApplication() :
+    // Textures
+      textures()
+    // Constant Buffers
+    , generalVSBuffer(nullptr)
+    , generalPSBuffer(nullptr)
+    , entityVSBuffer(nullptr)
+    , entityPSBuffer(nullptr)
+    // Shaders
+    , vertexShader(nullptr)
+    , pixelShader(nullptr)
+    // Materials
+    , material(nullptr)
+    // Meshes
+    , ballMesh(nullptr)
+    , blockMesh(nullptr)
+    , paddleMesh(nullptr)
+    // Game
+    , game(nullptr)
+    , key(EKey::NONE)
 {}
 
 CApplication::~CApplication() {}
@@ -26,51 +40,74 @@ CApplication::~CApplication() {}
 // -----------------------------------------------------------------------------
 
 bool CApplication::InternOnStartup() {
-    SEntity entities[3] = {
-        { &this->TriangleMesh, -3.0f, 0.0f, 0.0f },
-        { &this->SphereMesh, 0.0f, 0.0f, 0.0f },
-        { &this->CubeMesh, 3.0f, 0.0f, 0.0f },
-    };
-
-    for (int i = 0; i < 3; i++) {
-        this->dynamicEntities.push_back(entities[i]);
-    }
-
+    this->game = new CGame(&this->ballMesh, &this->blockMesh, &this->paddleMesh);
     return true;
 }
 
 bool CApplication::InternOnShutdown() {
+    this->game->~CGame();
     return true;
 }
 
 // -----------------------------------------------------------------------------
 
 bool CApplication::InternOnCreateTextures() {
-    CreateTexture("..\\data\\earth.dds" , &this->Texture);
+    CreateTexture("..\\data\\ball.png", &this->textures[0]);
+    CreateTexture("..\\data\\paddle.jpg", &this->textures[1]);
+    CreateTexture("..\\data\\bed-rock.jpg", &this->textures[2]);
+    CreateTexture("..\\data\\paddle.jpg", &this->textures[3]);
+    CreateTexture("..\\data\\block-hard.jpg", &this->textures[4]);
+    CreateTexture("..\\data\\block-cracked.jpg", &this->textures[5]);
 
     return true;
 }
 
 bool CApplication::InternOnReleaseTextures() {
-    ReleaseTexture(this->Texture);
+    for (int i = 0; i < NUM_OF_TEXTURES; i++) {
+        ReleaseTexture(this->textures[i]);
+    }
 
     return true;
 }
 
 // -----------------------------------------------------------------------------
 
-bool CApplication::InternOnCreateConstantBuffers() {
-    float dummy[16];
+struct SGeneralVSBuffer {
+    float viewProjectionMatrix[16];
+};
 
-    CreateConstantBuffer(sizeof(dummy), &this->CB_VS_WorldMatrix);
-    CreateConstantBuffer(sizeof(dummy), &this->CB_VS_ViewProjectionMatrix);
+struct SGeneralPSBuffer {
+    float cameraPosition[3];
+    float _padding0;
+    float lightDir[3];
+    float _padding1;
+    float ambientLight[3];
+    float _padding2;
+};
+
+struct SEntityVSBuffer {
+    float worldMatrix[16];
+};
+
+struct SEntityPSBuffer {
+    float texture;
+    float _padding[3];
+};
+
+bool CApplication::InternOnCreateConstantBuffers() {
+    CreateConstantBuffer(sizeof(SGeneralVSBuffer), &this->generalVSBuffer);
+    CreateConstantBuffer(sizeof(SGeneralPSBuffer), &this->generalPSBuffer);
+    CreateConstantBuffer(sizeof(SEntityVSBuffer), &this->entityVSBuffer);
+    CreateConstantBuffer(sizeof(SEntityPSBuffer), &this->entityPSBuffer);
 
     return true; 
 }
 
 bool CApplication::InternOnReleaseConstantBuffers() {
-    ReleaseConstantBuffer(this->CB_VS_WorldMatrix);
-    ReleaseConstantBuffer(this->CB_VS_ViewProjectionMatrix);
+    ReleaseConstantBuffer(this->generalVSBuffer);
+    ReleaseConstantBuffer(this->generalPSBuffer);
+    ReleaseConstantBuffer(this->entityVSBuffer);
+    ReleaseConstantBuffer(this->entityPSBuffer);
 
     return true;
 }
@@ -78,15 +115,15 @@ bool CApplication::InternOnReleaseConstantBuffers() {
 // -----------------------------------------------------------------------------
 
 bool CApplication::InternOnCreateShader() {
-    CreateVertexShader("..\\src\\shader.fx", "VShader", &this->VertexShader);
-    CreatePixelShader("..\\src\\shader.fx", "PShader", &this->PixelShader);
+    CreateVertexShader("..\\src\\shader.fx", "VShader", &this->vertexShader);
+    CreatePixelShader ("..\\src\\shader.fx", "PShader", &this->pixelShader);
 
     return true;
 }
 
 bool CApplication::InternOnReleaseShader() {
-    ReleaseVertexShader(this->VertexShader);
-    ReleasePixelShader(this->PixelShader);
+    ReleaseVertexShader(this->vertexShader);
+    ReleasePixelShader (this->pixelShader);
 
     return true;
 }
@@ -94,35 +131,21 @@ bool CApplication::InternOnReleaseShader() {
 // -----------------------------------------------------------------------------
 
 bool CApplication::InternOnCreateMaterials() {
-    SMaterialInfo materialInfo;
+    BHandle vsBuffers[2] = { this->generalVSBuffer, this->entityVSBuffer };
+    BHandle psBuffers[2] = { this->generalPSBuffer, this->entityPSBuffer };
 
-    materialInfo.m_NumberOfTextures = 1;
-    materialInfo.m_pTextures[0] = this->Texture;
-
-    materialInfo.m_NumberOfVertexConstantBuffers = 2;
-    materialInfo.m_pVertexConstantBuffers[0] = this->CB_VS_WorldMatrix;
-    materialInfo.m_pVertexConstantBuffers[1] = this->CB_VS_ViewProjectionMatrix;
-
-    materialInfo.m_NumberOfPixelConstantBuffers = 0;
-
-    materialInfo.m_pVertexShader = this->VertexShader;
-    materialInfo.m_pPixelShader  = this->PixelShader;
-
-    materialInfo.m_NumberOfInputElements = 3;
-    materialInfo.m_InputElements[0].m_pName = "POSITION";
-    materialInfo.m_InputElements[0].m_Type  = SInputElement::Float3;
-    materialInfo.m_InputElements[1].m_pName = "TEXCOORD";
-    materialInfo.m_InputElements[1].m_Type  = SInputElement::Float2;
-    materialInfo.m_InputElements[2].m_pName = "NORMAL";
-    materialInfo.m_InputElements[2].m_Type  = SInputElement::Float3;
-
-    CreateMaterial(materialInfo, &this->Material);
+    this->material = createMaterial(
+        NUM_OF_TEXTURES, this->textures,
+        2, vsBuffers,
+        2, psBuffers,
+        this->vertexShader, this->pixelShader
+    );
 
     return true;
 }
 
 bool CApplication::InternOnReleaseMaterials() {
-    ReleaseMaterial(this->Material);
+    ReleaseMaterial(this->material);
 
     return true;
 }
@@ -130,79 +153,101 @@ bool CApplication::InternOnReleaseMaterials() {
 // -----------------------------------------------------------------------------
 
 bool CApplication::InternOnCreateMeshes() {
-    CreateTriangleMesh(this->Material, this->TriangleMesh);
-    CreateCubeMesh(this->Material, this->CubeMesh);
-    CreateSphereMesh(this->Material, this->SphereMesh);
+    this->ballMesh   = createBallMesh(this->material);
+    this->blockMesh  = createBlockMesh(this->material);
+    this->paddleMesh = createPaddleMesh(this->material);
 
     return true;
 }
 
 bool CApplication::InternOnReleaseMeshes() {
-    ReleaseMesh(this->TriangleMesh);
-    ReleaseMesh(this->CubeMesh);
-    ReleaseMesh(this->SphereMesh);
+    ReleaseMesh(this->ballMesh);
+    ReleaseMesh(this->blockMesh);
+    ReleaseMesh(this->paddleMesh);
 
     return true;
 }
 
 // -----------------------------------------------------------------------------
 
-bool CApplication::InternOnResize(int _Width, int _Height) {
+bool CApplication::InternOnResize(int width, int height) {
+    SCamera cam;
+    SLight light;
+
     float viewMatrix[16];
-
-    float cameraPosition[3] = { 0.0f, 0.0f, -8.0f };
-    float cameraTarget[3] = { 0.0f, 0.0f, 0.0f };
-    float cameraUp[3] = { 0.0f, 1.0f, 0.0f };
-
-    GetViewMatrix(cameraPosition, cameraTarget, cameraUp, viewMatrix);
+    GetViewMatrix(cam.position, cam.target, cam.up, viewMatrix);
 
     float projectionMatrix[16];
-    GetProjectionMatrix(
-        this->m_FieldOfViewY,
-        (float) _Width / (float) _Height,
-        0.1f, 100.0f, projectionMatrix
-    );
+    float aspectRatio = (float) width / (float) height;
+    GetProjectionMatrix(cam.aperture, aspectRatio, cam.nearClip, cam.farClip, projectionMatrix);
 
-    float viewProjectionMatrix[16];
-    MulMatrix(viewMatrix, projectionMatrix, viewProjectionMatrix);
-    UploadConstantBuffer(viewProjectionMatrix, this->CB_VS_ViewProjectionMatrix);
+    SGeneralVSBuffer vsBuffer;
+    MulMatrix(viewMatrix, projectionMatrix, vsBuffer.viewProjectionMatrix);
+    UploadConstantBuffer(&vsBuffer, this->generalVSBuffer);
+
+    SGeneralPSBuffer psBuffer;
+    memcpy(psBuffer.cameraPosition, cam.position, sizeof(float)*3);
+    GetNormalizedVector(light.direction, psBuffer.lightDir);
+    memcpy(psBuffer.ambientLight, light.ambient, sizeof(float)*3);
+    UploadConstantBuffer(&psBuffer, this->generalPSBuffer);
 
     return true;
 }
 
 // -----------------------------------------------------------------------------
 
-float angle = 0.0f;
-float angleStep = 1.1f;
-float maxAngle = 360.0f;
+bool CApplication::InternOnKeyEvent(unsigned int key, bool isDown, bool altDown) {
+    switch (key) {
+    case KEY_SPACE:
+        if (!isDown) { // trigger only when key was released
+            this->key = EKey::SPACE;
+            return true;
+        }
+        break;
+
+    case KEY_LEFT:
+        this->key = EKey::LEFT;
+        break;
+
+    case KEY_RIGHT:
+        this->key = EKey::RIGHT;
+        break;
+
+    default:
+        this->key = EKey::NONE;
+    }
+
+    if (!isDown) {
+        this->key = EKey::NONE;
+    }
+
+    return true;
+}
 
 bool CApplication::InternOnUpdate() {
-    angle += angleStep;
-    if (angle > maxAngle) angle = 0;
-
+    this->game->onUpdate(this->key);
+    if (this->key == EKey::SPACE) {
+        this->key = EKey::NONE;
+    }
     return true;
 }
 
 // -----------------------------------------------------------------------------
 
 bool CApplication::InternOnFrame() {
-    float RotationXMatrix[16];
-    float RotationYMatrix[16];
+    SEntityVSBuffer vsBuffer;
+    SEntityPSBuffer psBuffer;
 
-    float WorldMatrix[16];
+    std::vector<SEntity*>* entities  = this->game->getEntities();
+    
+    for (auto entity : *entities) {
+        memcpy(vsBuffer.worldMatrix, entity->worldMatrix, sizeof(float)*16);
+        psBuffer.texture = float(entity->texture);
 
-    for (auto &entity : this->dynamicEntities) {
-        updateWorldMatrix(entity);
+        UploadConstantBuffer(&vsBuffer, this->entityVSBuffer);
+        UploadConstantBuffer(&psBuffer, this->entityPSBuffer);
 
-        GetRotationXMatrix(angle, RotationXMatrix);
-        GetRotationYMatrix(angle * 0.9f, RotationYMatrix);
-
-        MulMatrix(RotationXMatrix, RotationYMatrix, WorldMatrix);
-        MulMatrix(WorldMatrix, entity.worldMatrix, WorldMatrix);
-
-        UploadConstantBuffer(WorldMatrix, this->CB_VS_WorldMatrix);
-
-        DrawMesh(*entity.mesh);
+        DrawMesh(*entity->mesh);
     }
 
     return true;
