@@ -3,6 +3,7 @@
   <ItemGroup>
     <ClCompile Include="..\..\src\app.cpp" />
     <ClCompile Include="..\..\src\main.cpp" />
+    <ClCompile Include="..\..\src\game\game.cpp" />
     <ClCompile Include="..\..\src\entities\ball.cpp" />
     <ClCompile Include="..\..\src\entities\block.cpp" />
     <ClCompile Include="..\..\src\entities\entity.cpp" />
@@ -10,6 +11,10 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\src\app.hpp" />
+    <ClInclude Include="..\..\src\camera.hpp" />
+    <ClInclude Include="..\..\src\key.hpp" />
+    <ClInclude Include="..\..\src\game\data.hpp" />
+    <ClInclude Include="..\..\src\game\game.hpp" />
     <ClInclude Include="..\..\src\entities\ball.hpp" />
     <ClInclude Include="..\..\src\entities\block.hpp" />
     <ClInclude Include="..\..\src\entities\entity.hpp" />

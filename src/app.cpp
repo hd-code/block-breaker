@@ -5,8 +5,9 @@
 #include "entities/block.hpp"
 #include "entities/entity.hpp"
 #include "entities/paddle.hpp"
-#include "game.hpp"
 #include "yoshix.h"
+
+#include <iostream>
 
 using namespace gfx;
 
@@ -30,6 +31,7 @@ CApplication::CApplication() :
     , paddleMesh(nullptr)
     // Game
     , game(nullptr)
+    , key(EKey::NONE)
 {}
 
 CApplication::~CApplication() {}
@@ -52,7 +54,7 @@ bool CApplication::InternOnCreateTextures() {
     CreateTexture("..\\data\\ball.png", &this->textures[0]);
     CreateTexture("..\\data\\paddle.jpg", &this->textures[1]);
     CreateTexture("..\\data\\bed-rock.jpg", &this->textures[2]);
-    CreateTexture("..\\data\\moon.dds", &this->textures[3]);
+    CreateTexture("..\\data\\paddle.jpg", &this->textures[3]);
     CreateTexture("..\\data\\block-hard.jpg", &this->textures[4]);
     CreateTexture("..\\data\\block-cracked.jpg", &this->textures[5]);
 
@@ -178,9 +180,9 @@ bool CApplication::InternOnResize(int width, int height) {
     UploadConstantBuffer(&vsBuffer, this->generalVSBuffer);
 
     SGeneralPSBuffer psBuffer;
-    memcpy(psBuffer.cameraPosition, cam.position, 3);
+    memcpy(psBuffer.cameraPosition, cam.position, sizeof(float)*3);
     GetNormalizedVector(light.direction, psBuffer.lightDir);
-    memcpy(psBuffer.ambientLight, light.ambient, 3);
+    memcpy(psBuffer.ambientLight, light.ambient, sizeof(float)*3);
     UploadConstantBuffer(&psBuffer, this->generalPSBuffer);
 
     return true;
@@ -193,6 +195,7 @@ bool CApplication::InternOnKeyEvent(unsigned int key, bool isDown, bool altDown)
     case KEY_SPACE:
         if (!isDown) { // trigger only when key was released
             this->key = EKey::SPACE;
+            return true;
         }
         break;
 
@@ -208,13 +211,18 @@ bool CApplication::InternOnKeyEvent(unsigned int key, bool isDown, bool altDown)
         this->key = EKey::NONE;
     }
 
+    if (!isDown) {
+        this->key = EKey::NONE;
+    }
+
     return true;
 }
 
 bool CApplication::InternOnUpdate() {
     this->game->onUpdate(this->key);
-    this->key = EKey::NONE;
-
+    if (this->key == EKey::SPACE) {
+        this->key = EKey::NONE;
+    }
     return true;
 }
 
@@ -225,7 +233,7 @@ bool CApplication::InternOnFrame() {
     std::vector<SEntity*>* entities  = this->game->getEntities();
 
     for (auto entity : *entities) {
-        memcpy(buffer.worldMatrix, entity->worldMatrix, 16);
+        memcpy(buffer.worldMatrix, entity->worldMatrix, sizeof(float)*16);
         buffer.texture = float(entity->texture);
         UploadConstantBuffer(&buffer, this->entityBuffer);
         DrawMesh(*entity->mesh);

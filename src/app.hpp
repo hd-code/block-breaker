@@ -1,7 +1,7 @@
 #pragma once
 
 #include "entities/entity.hpp"
-#include "game.hpp"
+#include "game/game.hpp"
 #include "key.hpp"
 #include "yoshix.h"
 
