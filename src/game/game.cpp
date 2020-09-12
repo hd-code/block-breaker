@@ -3,7 +3,7 @@
 // -----------------------------------------------------------------------------
 
 CGame::CGame(gfx::BHandle* ballMesh, gfx::BHandle* blockMesh, gfx::BHandle* paddleMesh)
-    : status(EGameStatus::ON)
+    : status(EGameStatus::PAUSED)
 {
     this->ball = CreateBall(ballMesh);
     this->entities.push_back(&this->ball);
@@ -38,16 +38,16 @@ std::vector<SEntity*>* CGame::getEntities() {
 void CGame::onUpdate(EKey key) {
     switch (this->status) {
     case EGameStatus::PAUSED:
-        // if (key == EKey::SPACE) {
-        //     this->status = EGameStatus::ON;
-        // }
+        if (key == EKey::SPACE) {
+            this->status = EGameStatus::ON;
+        }
         break;
 
     case EGameStatus::ON:
         this->advanceGame(key);
-        // if (key == EKey::SPACE) {
-        //     this->status = EGameStatus::PAUSED;
-        // }
+        if (key == EKey::SPACE) {
+            this->status = EGameStatus::PAUSED;
+        }
         break;
 
     case EGameStatus::WIN:
@@ -70,20 +70,19 @@ void CGame::advanceGame(EKey key) {
     //     this->status = EGameStatus::WIN;
     // }
 
-    // if (this->isLoss()) {
-    //     this->status = EGameStatus::LOST;
-    // }
+    if (this->isLoss()) {
+        this->status = EGameStatus::LOST;
+    }
 }
 
 void CGame::handleCollisions() {
+    this->ball.handleCollision(BORDER_TOP, BORDER_LEFT, BORDER_RIGHT);
+
     this->ball.handleCollision(this->paddle);
 
-    for (size_t i = 0; i < NUM_OF_BED_ROCKS; i++) {
-        this->ball.handleCollision(this->bedRocks[i]);
-    }
-    
     for (size_t i = this->startOfBlocks; i < this->entities.size(); i++) {
         SBlock* block = (SBlock*)(this->entities[i]);
+        
         bool collided = this->ball.handleCollision(*block);
         
         if (collided) {

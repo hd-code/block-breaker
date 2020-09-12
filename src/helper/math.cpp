@@ -12,3 +12,7 @@ float GetRandom(float min, float max) {
     float diff = max - min;
     return GetRandom() * diff + min;
 }
+
+void SetSeed(unsigned int seed) {
+    std::srand(seed);
+}

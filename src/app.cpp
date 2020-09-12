@@ -212,7 +212,7 @@ bool CApplication::InternOnResize(int width, int height) {
 bool CApplication::InternOnKeyEvent(unsigned int key, bool isDown, bool altDown) {
     switch (key) {
     case KEY_SPACE:
-        if (!isDown) { // trigger only when key was released
+        if (!isDown) { // trigger only once when key was released
             this->key = EKey::SPACE;
             return true;
         }
@@ -239,6 +239,7 @@ bool CApplication::InternOnKeyEvent(unsigned int key, bool isDown, bool altDown)
 
 bool CApplication::InternOnUpdate() {
     this->game->onUpdate(this->key);
+
     if (this->key == EKey::SPACE) {
         this->key = EKey::NONE;
     }

@@ -7,9 +7,9 @@
 #include <cmath>
 #include <vector>
 
-#include <iostream>
-
 // -----------------------------------------------------------------------------
+
+const float RANDOM_DIRECTION_CHANGE = 0.1f;
 
 void SBall::move() {
     this->position[0] += this->speed * this->direction[0];
@@ -17,6 +17,25 @@ void SBall::move() {
     this->position[2] += this->speed * this->direction[2];
 
     this->updateWorldMatrix();
+}
+
+bool SBall::handleCollision(float topBorder, float leftBorder, float rightBorder) {
+    if (topBorder < this->position[1] + this->radius) {
+        this->changeDirection(ECollisionAt::TOP);
+        return true;
+    }
+
+    if (leftBorder > this->position[0] - this->radius) {
+        this->changeDirection(ECollisionAt::LEFT);
+        return true;
+    }
+
+    if (rightBorder < this->position[0] + this->radius) {
+        this->changeDirection(ECollisionAt::RIGHT);
+        return true;
+    }
+
+    return false;
 }
 
 bool SBall::handleCollision(SBlock &block) {
@@ -30,8 +49,24 @@ bool SBall::handleCollision(SBlock &block) {
 
     // collision
     if (xDiff <= 0 && yDiff <= 0) {
+        ECollisionAt collAt;
+        if (xDiff > yDiff) { // horizontal collision
+            if (this->position[0] < block.position[0]) {
+                collAt = ECollisionAt::RIGHT;
+            } else {
+                collAt = ECollisionAt::LEFT;
+            }
+        } else { // vertical collision
+            if (this->position[1] < block.position[1]) {
+                collAt = ECollisionAt::TOP;
+            } else {
+                collAt = ECollisionAt::BOTTOM;
+            }
+        }
+
+        this->changeDirection(collAt);
         block.onCollision();
-        this->changeDirection(xDiff > yDiff);
+
         return true;
     }
 
@@ -47,7 +82,20 @@ bool SBall::handleCollision(const SPaddle &paddle) {
 
     // collision
     if (xDiff <= 0 && yDiff <= 0) {
-        this->changeDirection(xDiff > yDiff);
+        this->changeDirection(ECollisionAt::BOTTOM);
+        if (xDiff > yDiff) { // horizontal collision
+            if (this->position[0] < paddle.position[0]) {
+                this->changeDirection(ECollisionAt::RIGHT);
+            } else {
+                this->changeDirection(ECollisionAt::LEFT);
+            }
+        }
+
+        // alter direction angle just a little bit, to mix up game play
+        float randomDirChange = GetRandom(-RANDOM_DIRECTION_CHANGE, RANDOM_DIRECTION_CHANGE);
+        this->direction[0] += randomDirChange;
+        gfx::GetNormalizedVector(this->direction, this->direction);
+
         return true;
     }
 
@@ -58,11 +106,31 @@ bool SBall::isOnGround(float groundLevel) {
     return groundLevel > this->position[1];
 }
 
-void SBall::changeDirection(bool horizontalCollision) {
-    if (horizontalCollision) {
-        this->direction[0] *= -1.0f; // flip x direction
-    } else {
-        this->direction[1] *= -1.0f; // flip y direction
+void SBall::changeDirection(ECollisionAt collisionAt) {
+    switch (collisionAt) {
+    case ECollisionAt::TOP:
+        if (this->direction[1] > 0) {
+            this->direction[1] *= -1.0f;
+        }
+        break;
+
+    case ECollisionAt::BOTTOM:
+        if (this->direction[1] < 0) {
+            this->direction[1] *= -1.0f;
+        }
+        break;
+
+    case ECollisionAt::LEFT:
+        if (this->direction[0] < 0) {
+            this->direction[0] *= -1.0f;
+        }
+        break;
+
+    case ECollisionAt::RIGHT:
+        if (this->direction[0] > 0) {
+            this->direction[0] *= -1.0f;
+        }
+        break;
     }
 }
 
@@ -92,6 +160,7 @@ SBall CreateBall(gfx::BHandle* ballMesh) {
     ball.radius = RADIUS;
     ball.speed  = SPEED;
 
+    // ball will always start with a slight random angle
     ball.direction[0] = GetRandom(DIR_MIN_X, DIR_MAX_X);
     if (GetRandom() < 0.5f) {
         ball.direction[0] *= -1.0f;
@@ -248,7 +317,6 @@ gfx::BHandle CreateBallMesh(gfx::BHandle &material) {
     triangles.push_back({11,7,6});
     triangles.push_back({12,8,7});
 
-    subdivideTriangles(verts, triangles);
     subdivideTriangles(verts, triangles);
     subdivideTriangles(verts, triangles);
 

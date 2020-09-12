@@ -12,6 +12,7 @@ struct SBall : SEntity {
     float radius;
     float speed;
 
+    bool handleCollision(float topBorder, float leftBorder, float rightBorder);
     bool handleCollision(SBlock &block);
     bool handleCollision(const SPaddle &paddle);
 
@@ -20,7 +21,9 @@ struct SBall : SEntity {
     void move();
 
 private:
-    void changeDirection(bool horizontalCollision);
+    enum class ECollisionAt { TOP, BOTTOM, LEFT, RIGHT };
+
+    void changeDirection(ECollisionAt collisionAt);
 };
 
 // -----------------------------------------------------------------------------
