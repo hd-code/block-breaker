@@ -9,4 +9,5 @@ gfx::BHandle CreateMaterial(
     int numOfVSB, gfx::BHandle vsBuffers[],
     int numOfPSB, gfx::BHandle psBuffers[],
     int numOfInputs, gfx::SInputElement inputElements[],
-    gfx::BHandle &vertexShader, gfx::BHandle &pixelShader);
+    gfx::BHandle &vertexShader, gfx::BHandle &pixelShader
+);

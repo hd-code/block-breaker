@@ -5,26 +5,26 @@
 CGame::CGame(gfx::BHandle* ballMesh, gfx::BHandle* blockMesh, gfx::BHandle* paddleMesh)
     : status(EGameStatus::ON)
 {
-    this->ball = createBall(ballMesh);
-    // this->entities.push_back(&this->ball);
+    this->ball = CreateBall(ballMesh);
+    this->entities.push_back(&this->ball);
 
-    this->paddle = createPaddle(paddleMesh);
+    this->paddle = CreatePaddle(paddleMesh);
     this->entities.push_back(&this->paddle);
 
     for (int i = 0; i < NUM_OF_BED_ROCKS; i++) {
         float position[3];
         memcpy(position, BED_ROCKS[i].position, sizeof(float)*3);
-        this->bedRocks[i] = createBlock(blockMesh, BED_ROCKS[i].type, position);
+        this->bedRocks[i] = CreateBlock(blockMesh, BED_ROCKS[i].type, position);
         this->entities.push_back(&this->bedRocks[i]);
     }
     
-    // this->startOfBlocks = this->entities.size();
-    // for (int i = 0; i < NUM_OF_BLOCKS; i++) {
-    //     float position[3];
-    //     memcpy(position, BLOCKS[i].position, sizeof(float)*3);
-    //     this->blocks[i] = createBlock(blockMesh, BLOCKS[i].type, position);
-    //     this->entities.push_back(&this->blocks[i]);
-    // }
+    this->startOfBlocks = this->entities.size();
+    for (int i = 0; i < NUM_OF_BLOCKS; i++) {
+        float position[3];
+        memcpy(position, BLOCKS[i].position, sizeof(float)*3);
+        this->blocks[i] = CreateBlock(blockMesh, BLOCKS[i].type, position);
+        this->entities.push_back(&this->blocks[i]);
+    }
 }
 
 CGame::~CGame() {
@@ -93,14 +93,8 @@ void CGame::handleCollisions() {
             continue;
         }
 
-        switch (block->type) {
-        case EBlockType::NORMAL:
+        if (block->isBroken()) {
             this->entities.erase(this->entities.begin() + i);
-
-        case EBlockType::HARD:
-            if (block->hits >= HARD_BLOCK_NUM_OF_HITS) {
-                this->entities.erase(this->entities.begin() + i);
-            }
         }
     }
 }

@@ -4,11 +4,12 @@
 
 // -----------------------------------------------------------------------------
 
-enum class ETexture { BALL, PADDLE, BED_ROCK, BLOCK, BLOCK_HARD, BLOCK_CRACKED };
+enum class ETexture;
 
 struct SEntity {
     gfx::BHandle *mesh;
     ETexture texture;
+    float specularExponent;
 
     float position[3];
     float worldMatrix[16];
@@ -18,16 +19,24 @@ struct SEntity {
 
 // -----------------------------------------------------------------------------
 
-gfx::BHandle createMaterial(
-    int numOfTex, gfx::BHandle textures[],
-    int numOfVSB, gfx::BHandle vsBuffers[],
-    int numOfPSB, gfx::BHandle psBuffers[],
-    gfx::BHandle &vertexShader, gfx::BHandle &pixelShader
-);
+enum class ETexture { BALL, PADDLE, BED_ROCK, BLOCK, BLOCK_HARD, BLOCK_CRACKED, LENGTH };
+const char* TEXTURES[] = {
+    "..\\data\\ball.png",
+    "..\\data\\paddle.jpg",
+    "..\\data\\bed-rock.jpg",
+    "..\\data\\block.jpg",
+    "..\\data\\block-hard.jpg",
+    "..\\data\\block-cracked.jpg"
+};
 
 // -----------------------------------------------------------------------------
 
 const int FLOATS_IN_VERTEX = 8; // postion 3, normal 3, texture 2
-const int INTS_IN_TRIANGLE = 3;
 
-gfx::BHandle createMesh(int numOfVerts, float *verts, int numOfTriangles, int *triangles, gfx::BHandle &material);
+const int NUM_OF_INPUTS = 3;
+
+gfx::SInputElement INPUT_ELEMENTS[] = {
+    "POSITION", gfx::SInputElement::Float3,
+    "NORMAL",   gfx::SInputElement::Float3,
+    "TEXCOORD", gfx::SInputElement::Float2,
+};

@@ -1,5 +1,9 @@
 #include "ball.hpp"
 
+#include "../helper/math.hpp"
+#include "../helper/mesh.hpp"
+#include "yoshix.h"
+
 #include <cmath>
 #include <vector>
 
@@ -59,24 +63,40 @@ void SBall::changeDirection(bool horizontalCollision) {
 
 // -----------------------------------------------------------------------------
 
+const ETexture TEXTURE = ETexture::BALL;
+const float SPEC_EXP   = 100.0f;
+const float POSITION[] = { 0.0f, 0.0f, 0.0f };
+
 const float RADIUS = 0.5f;
 const float SPEED = 0.01f;
 
-SBall createBall(gfx::BHandle* ballMesh) {
+const float DIRECTION[] = { 0.0f, -1.0f, 0.0f };
+const float DIR_MIN_X = 0.5f;
+const float DIR_MAX_X = 1.5f;
+
+SBall CreateBall(gfx::BHandle* ballMesh) {
     SBall ball;
-
     ball.mesh = ballMesh;
-    ball.texture = ETexture::BALL;
+    ball.texture = TEXTURE;
+    ball.specularExponent = SPEC_EXP;
 
-    ball.position[0] = 0.0f;
-    ball.position[1] = 0.0f;
-    ball.position[2] = 0.0f;
-
-    ball.direction[1] = -1.0f;
-    ball.direction[2] = 0.0f;
+    ball.position[0] = POSITION[0];
+    ball.position[1] = POSITION[1];
+    ball.position[2] = POSITION[2];
 
     ball.radius = RADIUS;
     ball.speed  = SPEED;
+
+    ball.direction[0] = GetRandom(DIR_MIN_X, DIR_MAX_X);
+    if (GetRandom() < 0.5f) {
+        ball.direction[0] *= -1.0f;
+    }
+    ball.direction[1] = -1.0f;
+    ball.direction[2] = 0.0f;
+
+    gfx::GetNormalizedVector(ball.direction, ball.direction);
+
+    ball.updateWorldMatrix();
 
     return ball;
 }
@@ -184,7 +204,7 @@ int* toTriangleArray(std::vector<STriangle> triangles, int tmpArray[], int numOf
     for (int i = 0; i < numOfTriangles; i++) {
         STriangle triangle = triangles[i];
 
-        int index = i * INTS_IN_TRIANGLE;
+        int index = i * INDICES_PER_TRIANGLE;
         tmpArray[index + 0] = triangle.indices[0];
         tmpArray[index + 1] = triangle.indices[1];
         tmpArray[index + 2] = triangle.indices[2];
@@ -192,7 +212,7 @@ int* toTriangleArray(std::vector<STriangle> triangles, int tmpArray[], int numOf
     return &tmpArray[0];
 }
 
-gfx::BHandle createBallMesh(gfx::BHandle &material) {
+gfx::BHandle CreateBallMesh(gfx::BHandle &material) {
     std::vector<SVertex> verts;
     // top verts
     verts.push_back({ 0.0f, 1.0f, 0.0f,   0.000f, 0.0f}); // 0
@@ -231,9 +251,9 @@ gfx::BHandle createBallMesh(gfx::BHandle &material) {
     float *tmpVerts = new float[numOfVerts * FLOATS_IN_VERTEX];
 
     int numOfTri = triangles.size();
-    int *tmpTri = new int[numOfTri * INTS_IN_TRIANGLE];
+    int *tmpTri = new int[numOfTri * INDICES_PER_TRIANGLE];
 
-    gfx::BHandle mesh = createMesh(
+    gfx::BHandle mesh = CreateMesh(
         numOfVerts, toVertexArray(verts, tmpVerts, numOfVerts),
         numOfTri, toTriangleArray(triangles, tmpTri, numOfTri),
         material

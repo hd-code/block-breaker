@@ -27,6 +27,7 @@ cbuffer PSBuffer : register(b0) {
 
 cbuffer PSBuffer : register(b1) {
     float TextureIndex;
+    float SpecularExponent;
 }
 
 // --- Data Types --------------------------------------------------------------
@@ -65,9 +66,9 @@ float4 PShader(PSInput input) : SV_Target {
 
     float3 normal = normalize(input.normal);
 
-    float4 ambientLight  = float4(0.1f, 0.1f, 0.1f, 1.0f);
+    float4 ambientLight  = float4(AmbientLight, 1.0f);
 	float4 diffuseLight  = max(dot(normal, lightVec), 0.0f);
-    float4 specularLight = pow(max(dot(normal, halfVec), 0.0f), 110.0f);
+    float4 specularLight = pow(max(dot(normal, halfVec), 0.0f), SpecularExponent);
 	
     float4 light = ambientLight + diffuseLight + specularLight;
 

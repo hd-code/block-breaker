@@ -5,8 +5,8 @@
 gfx::BHandle CreateMesh(
     int numOfVerts, float *vertices,
     int numOfTriangles, int *triangles,
-    gfx::BHandle &material)
-{
+    gfx::BHandle &material
+) {
     gfx::SMeshInfo meshInfo;
 
     meshInfo.m_NumberOfVertices = numOfVerts;

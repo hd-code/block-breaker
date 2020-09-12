@@ -1,5 +1,7 @@
 #include "paddle.hpp"
 
+#include "../helper/mesh.hpp"
+
 // -----------------------------------------------------------------------------
 
 void SPaddle::move(EKey key, float leftLimit, float rightLimit) {
@@ -26,26 +28,27 @@ void SPaddle::move(EKey key, float leftLimit, float rightLimit) {
 
 // -----------------------------------------------------------------------------
 
-const float PADDLE_WIDTH  = 2.0f;
-const float PADDLE_HEIGHT = 0.5f;
-const float PADDLE_DEPTH  = 1.0f;
+const ETexture TEXTURE = ETexture::PADDLE;
+const float SPEC_EXP   = 2.0f;
+const float POSITION[] = { 0.0f, -4.0f, 0.0f };
 
-const float PADDLE_SPEED = 0.1f;
+const float SIZE[] = { 2.0f, 0.5f, 1.0f };
+const float SPEED  = 0.1f;
 
-SPaddle createPaddle(gfx::BHandle* paddleMesh) {
+SPaddle CreatePaddle(gfx::BHandle* paddleMesh) {
     SPaddle paddle;
-
     paddle.mesh = paddleMesh;
-    paddle.texture = ETexture::PADDLE;
+    paddle.texture = TEXTURE;
+    paddle.specularExponent = SPEC_EXP;
 
-    paddle.position[0] = 0.0f;
-    paddle.position[1] = 0.0f;
-    paddle.position[2] = 0.0f;
+    paddle.position[0] = POSITION[0];
+    paddle.position[1] = POSITION[1];
+    paddle.position[2] = POSITION[2];
 
-    paddle.width  = PADDLE_WIDTH;
-    paddle.height = PADDLE_HEIGHT;
+    paddle.width  = SIZE[0];
+    paddle.height = SIZE[1];
 
-    paddle.speed = PADDLE_SPEED;
+    paddle.speed = SPEED;
 
     paddle.updateWorldMatrix();
 
@@ -54,10 +57,10 @@ SPaddle createPaddle(gfx::BHandle* paddleMesh) {
 
 // --- Mesh --------------------------------------------------------------------
 
-gfx::BHandle createPaddleMesh(gfx::BHandle &material) {
-    float x = PADDLE_WIDTH  / 2.0f; // half width  length
-    float y = PADDLE_HEIGHT / 2.0f; // half height length
-    float z = PADDLE_DEPTH  / 2.0f; // half depth  length
+gfx::BHandle CreatePaddleMesh(gfx::BHandle &material) {
+    float x = SIZE[0] / 2.0f; // half width  length
+    float y = SIZE[1] / 2.0f; // half height length
+    float z = SIZE[2] / 2.0f; // half depth  length
 
     float vertices[][8] = {
         // front
@@ -101,5 +104,5 @@ gfx::BHandle createPaddleMesh(gfx::BHandle &material) {
         { 20,21,22 }, { 20,22,23 },
     };
 
-    return createMesh(24, &vertices[0][0], 12, &triangles[0][0], material);
+    return CreateMesh(24, &vertices[0][0], 12, &triangles[0][0], material);
 }

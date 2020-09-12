@@ -7,11 +7,9 @@
 
 #include <vector>
 
-using namespace gfx;
-
 // -----------------------------------------------------------------------------
 
-class CApplication : public IApplication {
+class CApplication : public gfx::IApplication {
     public:
         CApplication();
         virtual ~CApplication();
@@ -19,25 +17,25 @@ class CApplication : public IApplication {
     private:
         // Textures
         const static int NUM_OF_TEXTURES = 6;
-        BHandle textures[NUM_OF_TEXTURES];
+        gfx::BHandle textures[NUM_OF_TEXTURES];
 
         // Constant Buffers
-        BHandle generalVSBuffer;
-        BHandle generalPSBuffer;
-        BHandle entityVSBuffer;
-        BHandle entityPSBuffer;
+        gfx::BHandle generalVSBuffer;
+        gfx::BHandle generalPSBuffer;
+        gfx::BHandle entityVSBuffer;
+        gfx::BHandle entityPSBuffer;
 
         // Shaders
-        BHandle vertexShader;
-        BHandle pixelShader;
+        gfx::BHandle vertexShader;
+        gfx::BHandle pixelShader;
 
         // Materials
-        BHandle material;
+        gfx::BHandle material;
 
         // Meshes
-        BHandle ballMesh;
-        BHandle blockMesh;
-        BHandle paddleMesh;
+        gfx::BHandle ballMesh;
+        gfx::BHandle blockMesh;
+        gfx::BHandle paddleMesh;
 
         // Game
         CGame* game;

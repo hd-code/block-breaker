@@ -23,6 +23,10 @@ private:
     void changeDirection(bool horizontalCollision);
 };
 
-SBall createBall(gfx::BHandle* ballMesh);
+// -----------------------------------------------------------------------------
 
-gfx::BHandle createBallMesh(gfx::BHandle &material);
+SBall CreateBall(gfx::BHandle* ballMesh);
+
+// -----------------------------------------------------------------------------
+
+gfx::BHandle CreateBallMesh(gfx::BHandle &material);

@@ -1,11 +1,27 @@
 #include "block.hpp"
 
+#include "../helper/mesh.hpp"
+
 // -----------------------------------------------------------------------------
 
-void SBlock::onCollision() {
-    if (this->type != EBlockType::BED_ROCK) {
-        this->hits += 1;
+bool SBlock::isBroken() {
+    switch (this->type) {
+    case EBlockType::BED_ROCK:
+        return false;
+
+    case EBlockType::NORMAL:
+        return this->hits >= 1;
+
+    case EBlockType::HARD:
+        return this->hits >= 2;
     }
+
+    return false;
+}
+
+void SBlock::onCollision() {
+    this->hits++;
+
     if (this->type == EBlockType::HARD) {
         this->texture = ETexture::BLOCK_CRACKED;
     }
@@ -13,7 +29,9 @@ void SBlock::onCollision() {
 
 // -----------------------------------------------------------------------------
 
-const float BLOCK_SIZE = 1.0f;
+const float SPEC_EXP = 40.0f;
+
+const float SIZE = 1.0f;
 
 ETexture getBlockTexture(EBlockType type) {
     switch (type) {
@@ -24,18 +42,18 @@ ETexture getBlockTexture(EBlockType type) {
     }
 }
 
-SBlock createBlock(gfx::BHandle* blockMesh, EBlockType type, float position[3]) {
+SBlock CreateBlock(gfx::BHandle* blockMesh, EBlockType type, float position[3]) {
     SBlock block;
-
     block.mesh = blockMesh;
     block.texture = getBlockTexture(type);
+    block.specularExponent = SPEC_EXP;
 
     block.position[0] = position[0];
     block.position[1] = position[1];
     block.position[2] = position[2];
 
     block.hits = 0;
-    block.size = BLOCK_SIZE;
+    block.size = SIZE;
     block.type = type;
 
     block.updateWorldMatrix();
@@ -45,8 +63,8 @@ SBlock createBlock(gfx::BHandle* blockMesh, EBlockType type, float position[3]) 
 
 // --- Mesh --------------------------------------------------------------------
 
-gfx::BHandle createBlockMesh(gfx::BHandle &material) {
-    float e = BLOCK_SIZE / 2.0f; // half-edge length
+gfx::BHandle CreateBlockMesh(gfx::BHandle &material) {
+    float e = SIZE / 2.0f; // half-edge length
 
     float vertices[][8] = {
         // front
@@ -90,5 +108,5 @@ gfx::BHandle createBlockMesh(gfx::BHandle &material) {
         { 20,21,22 }, { 20,22,23 },
     };
 
-    return createMesh(24, &vertices[0][0], 12, &triangles[0][0], material);
+    return CreateMesh(24, &vertices[0][0], 12, &triangles[0][0], material);
 }
