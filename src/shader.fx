@@ -17,13 +17,16 @@ cbuffer VSBuffer : register(b0) {
 
 cbuffer VSBuffer : register(b1) {
     float4x4 WorldMatrix;
-    float TextureIndex;
 };
 
 cbuffer PSBuffer : register(b0) {
     float3 CameraPos;
     float3 LightDir;
     float3 AmbientLight;
+}
+
+cbuffer PSBuffer : register(b1) {
+    float TextureIndex;
 }
 
 // --- Data Types --------------------------------------------------------------
@@ -62,24 +65,21 @@ float4 PShader(PSInput input) : SV_Target {
 
     float3 normal = normalize(input.normal);
 
-    float4 ambientLight  = float4(AmbientLight, 0.0f);
+    float4 ambientLight  = float4(0.1f, 0.1f, 0.1f, 1.0f);
 	float4 diffuseLight  = max(dot(normal, lightVec), 0.0f);
     float4 specularLight = pow(max(dot(normal, halfVec), 0.0f), 110.0f);
 	
     float4 light = ambientLight + diffuseLight + specularLight;
 
-    Texture2D tex = Tex0;
     switch (TextureIndex) {
-        case 0: tex = Tex0;
-        case 1: tex = Tex1;
-        case 2: tex = Tex2;
-        case 3: tex = Tex3;
-        case 4: tex = Tex4;
-        case 5: tex = Tex5;
-        default: tex = Tex0;
+        case 0: return Tex0.Sample(Sampler, input.texCoords) * light;
+        case 1: return Tex1.Sample(Sampler, input.texCoords) * light;
+        case 2: return Tex2.Sample(Sampler, input.texCoords) * light;
+        case 3: return Tex3.Sample(Sampler, input.texCoords) * light;
+        case 4: return Tex4.Sample(Sampler, input.texCoords) * light;
+        case 5: return Tex5.Sample(Sampler, input.texCoords) * light;
+        default: return Tex0.Sample(Sampler, input.texCoords) * light;
     }
-
-    return tex.Sample(Sampler, input.texCoords) * light;
 }
 
 // Texture2D getTexture() {

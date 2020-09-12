@@ -5,9 +5,9 @@
 
 // -----------------------------------------------------------------------------
 
-enum EBlockType { BED_ROCK, NORMAL, HARD };
+enum class EBlockType { BED_ROCK, NORMAL, HARD };
 
-const unsigned int HARD_BLOCK_NUM_OF_HITS;
+const unsigned int HARD_BLOCK_NUM_OF_HITS = 2;
 
 struct SBlock : SEntity {
     EBlockType type;

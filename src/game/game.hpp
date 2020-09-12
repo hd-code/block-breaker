@@ -1,18 +1,18 @@
 #pragma once
 
 #include "data.hpp"
-#include "entities/ball.hpp"
-#include "entities/block.hpp"
-#include "entities/entity.hpp"
-#include "entities/paddle.hpp"
-#include "key.hpp"
+#include "../entities/ball.hpp"
+#include "../entities/block.hpp"
+#include "../entities/entity.hpp"
+#include "../entities/paddle.hpp"
+#include "../key.hpp"
 #include "yoshix.h"
 
 #include <vector>
 
 // -----------------------------------------------------------------------------
 
-enum EGameStatus { PAUSED, ON, WIN, LOST };
+enum class EGameStatus { PAUSED, ON, WIN, LOST };
 
 class CGame {
 public:

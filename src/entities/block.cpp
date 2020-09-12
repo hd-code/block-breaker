@@ -24,10 +24,10 @@ ETexture getBlockTexture(EBlockType type) {
     }
 }
 
-SBlock createBlock(gfx::BHandle &blockMesh, EBlockType type, float position[3]) {
+SBlock createBlock(gfx::BHandle* blockMesh, EBlockType type, float position[3]) {
     SBlock block;
 
-    block.mesh = &blockMesh;
+    block.mesh = blockMesh;
     block.texture = getBlockTexture(type);
 
     block.position[0] = position[0];

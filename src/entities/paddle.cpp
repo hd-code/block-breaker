@@ -3,19 +3,21 @@
 // -----------------------------------------------------------------------------
 
 void SPaddle::move(EKey key, float leftLimit, float rightLimit) {
+    float newX = this->position[0];
+
     switch (key) {
     case EKey::LEFT:
-        float newX = this->position[0] - this->speed;
+        newX -= this->speed;
         if (newX > leftLimit) {
-            this->position[0];
+            this->position[0] = newX;
             this->updateWorldMatrix();
         }
         break;
 
     case EKey::RIGHT:
-        float newX = this->position[0] + this->speed;
+        newX += this->speed;
         if (newX < rightLimit) {
-            this->position[0];
+            this->position[0] = newX;
             this->updateWorldMatrix();
         }
         break;
@@ -27,6 +29,8 @@ void SPaddle::move(EKey key, float leftLimit, float rightLimit) {
 const float PADDLE_WIDTH  = 2.0f;
 const float PADDLE_HEIGHT = 0.5f;
 const float PADDLE_DEPTH  = 1.0f;
+
+const float PADDLE_SPEED = 0.1f;
 
 SPaddle createPaddle(gfx::BHandle* paddleMesh) {
     SPaddle paddle;
@@ -40,6 +44,10 @@ SPaddle createPaddle(gfx::BHandle* paddleMesh) {
 
     paddle.width  = PADDLE_WIDTH;
     paddle.height = PADDLE_HEIGHT;
+
+    paddle.speed = PADDLE_SPEED;
+
+    paddle.updateWorldMatrix();
 
     return paddle;
 }

@@ -4,7 +4,7 @@
 
 // -----------------------------------------------------------------------------
 
-enum ETexture { BALL, PADDLE, BED_ROCK, BLOCK, BLOCK_HARD, BLOCK_CRACKED };
+enum class ETexture { BALL, PADDLE, BED_ROCK, BLOCK, BLOCK_HARD, BLOCK_CRACKED };
 
 struct SEntity {
     gfx::BHandle *mesh;

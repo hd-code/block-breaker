@@ -2,23 +2,29 @@
 
 // -----------------------------------------------------------------------------
 
-CGame::CGame(gfx::BHandle* ballMesh, gfx::BHandle* blockMesh, gfx::BHandle* paddleMesh) {
+CGame::CGame(gfx::BHandle* ballMesh, gfx::BHandle* blockMesh, gfx::BHandle* paddleMesh)
+    : status(EGameStatus::ON)
+{
     this->ball = createBall(ballMesh);
-    this->entities.push_back(&this->ball);
+    // this->entities.push_back(&this->ball);
 
     this->paddle = createPaddle(paddleMesh);
     this->entities.push_back(&this->paddle);
 
     for (int i = 0; i < NUM_OF_BED_ROCKS; i++) {
-        this->bedRocks[i] = createBlock(blockMesh, BED_ROCKS[i].type, BED_ROCKS[i].position);
+        float position[3];
+        memcpy(position, BED_ROCKS[i].position, sizeof(float)*3);
+        this->bedRocks[i] = createBlock(blockMesh, BED_ROCKS[i].type, position);
         this->entities.push_back(&this->bedRocks[i]);
     }
     
-    this->startOfBlocks = this->entities.size();
-    for (int i = 0; i < NUM_OF_BLOCKS; i++) {
-        this->blocks[i] = createBlock(blockMesh, BLOCKS[i].type, BLOCKS[i].position);
-        this->entities.push_back(&this->blocks[i]);
-    }
+    // this->startOfBlocks = this->entities.size();
+    // for (int i = 0; i < NUM_OF_BLOCKS; i++) {
+    //     float position[3];
+    //     memcpy(position, BLOCKS[i].position, sizeof(float)*3);
+    //     this->blocks[i] = createBlock(blockMesh, BLOCKS[i].type, position);
+    //     this->entities.push_back(&this->blocks[i]);
+    // }
 }
 
 CGame::~CGame() {
@@ -32,16 +38,16 @@ std::vector<SEntity*>* CGame::getEntities() {
 void CGame::onUpdate(EKey key) {
     switch (this->status) {
     case EGameStatus::PAUSED:
-        if (key == EKey::SPACE) {
-            this->status = EGameStatus::ON;
-        }
+        // if (key == EKey::SPACE) {
+        //     this->status = EGameStatus::ON;
+        // }
         break;
 
     case EGameStatus::ON:
         this->advanceGame(key);
-        if (key == EKey::SPACE) {
-            this->status = EGameStatus::PAUSED;
-        }
+        // if (key == EKey::SPACE) {
+        //     this->status = EGameStatus::PAUSED;
+        // }
         break;
 
     case EGameStatus::WIN:
@@ -65,21 +71,21 @@ void CGame::advanceGame(EKey key) {
     this->handleCollisions();
     this->ball.move();
 
-    if (this->isWin()) {
-        this->status = EGameStatus::WIN;
-    }
+    // if (this->isWin()) {
+    //     this->status = EGameStatus::WIN;
+    // }
 
-    if (this->isLoss()) {
-        this->status = EGameStatus::LOST;
-    }
+    // if (this->isLoss()) {
+    //     this->status = EGameStatus::LOST;
+    // }
 }
 
 void CGame::handleCollisions() {
-    for (int i = 0; i < NUM_OF_BED_ROCKS; i++) {
+    for (size_t i = 0; i < NUM_OF_BED_ROCKS; i++) {
         this->ball.handleCollision(this->bedRocks[i]);
     }
     
-    for (int i = this->startOfBlocks; i < this->entities.size(); i++) {
+    for (size_t i = this->startOfBlocks; i < this->entities.size(); i++) {
         SBlock* block = (SBlock*)(this->entities[i]);
         bool collided = this->ball.handleCollision(*block);
         

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "entities/entity.hpp"
-#include "game.hpp"
+#include "game/game.hpp"
 #include "key.hpp"
 #include "yoshix.h"
 
@@ -22,9 +22,10 @@ class CApplication : public IApplication {
         BHandle textures[NUM_OF_TEXTURES];
 
         // Constant Buffers
-        BHandle entityBuffer;
         BHandle generalVSBuffer;
         BHandle generalPSBuffer;
+        BHandle entityVSBuffer;
+        BHandle entityPSBuffer;
 
         // Shaders
         BHandle vertexShader;
