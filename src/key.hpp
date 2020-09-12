@@ -1,5 +1,7 @@
 #pragma once
 
+// -----------------------------------------------------------------------------
+
 enum class EKey { NONE, SPACE, LEFT, RIGHT };
 
 const unsigned int KEY_SPACE = 32;

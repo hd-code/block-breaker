@@ -4,27 +4,11 @@
 
 CGame::CGame(gfx::BHandle* ballMesh, gfx::BHandle* blockMesh, gfx::BHandle* paddleMesh)
     : status(EGameStatus::PAUSED)
+    , ballMesh(ballMesh)
+    , blockMesh(blockMesh)
+    , paddleMesh(paddleMesh)
 {
-    this->ball = CreateBall(ballMesh);
-    this->entities.push_back(&this->ball);
-
-    this->paddle = CreatePaddle(paddleMesh);
-    this->entities.push_back(&this->paddle);
-
-    for (int i = 0; i < NUM_OF_BED_ROCKS; i++) {
-        float position[3];
-        memcpy(position, BED_ROCKS[i].position, sizeof(float)*3);
-        this->bedRocks[i] = CreateBlock(blockMesh, BED_ROCKS[i].type, position);
-        this->entities.push_back(&this->bedRocks[i]);
-    }
-    
-    this->startOfBlocks = this->entities.size();
-    for (int i = 0; i < NUM_OF_BLOCKS; i++) {
-        float position[3];
-        memcpy(position, BLOCKS[i].position, sizeof(float)*3);
-        this->blocks[i] = CreateBlock(blockMesh, BLOCKS[i].type, position);
-        this->entities.push_back(&this->blocks[i]);
-    }
+    this->initGame();
 }
 
 CGame::~CGame() {
@@ -76,21 +60,43 @@ void CGame::advanceGame(EKey key) {
 }
 
 void CGame::handleCollisions() {
+    // borders
     this->ball.handleCollision(BORDER_TOP, BORDER_LEFT, BORDER_RIGHT);
 
+    // paddle
     this->ball.handleCollision(this->paddle);
 
+    // blocks
     for (size_t i = this->startOfBlocks; i < this->entities.size(); i++) {
-        SBlock* block = (SBlock*)(this->entities[i]);
-        
-        bool collided = this->ball.handleCollision(*block);
-        
-        if (collided) {
+        SBlock* block = (SBlock*)(this->entities[i]);        
+        if (this->ball.handleCollision(*block)) {
             if (block->isBroken()) {
                 this->entities.erase(this->entities.begin() + i);
             }
-            break;
         }
+    }
+}
+
+void CGame::initGame() {
+    this->ball = CreateBall(ballMesh);
+    this->entities.push_back(&this->ball);
+
+    this->paddle = CreatePaddle(paddleMesh);
+    this->entities.push_back(&this->paddle);
+
+    for (int i = 0; i < NUM_OF_BED_ROCKS; i++) {
+        float position[3];
+        memcpy(position, BED_ROCKS[i].position, sizeof(float)*3);
+        this->bedRocks[i] = CreateBlock(blockMesh, BED_ROCKS[i].type, position);
+        this->entities.push_back(&this->bedRocks[i]);
+    }
+    
+    this->startOfBlocks = this->entities.size();
+    for (int i = 0; i < NUM_OF_BLOCKS; i++) {
+        float position[3];
+        memcpy(position, BLOCKS[i].position, sizeof(float)*3);
+        this->blocks[i] = CreateBlock(blockMesh, BLOCKS[i].type, position);
+        this->entities.push_back(&this->blocks[i]);
     }
 }
 

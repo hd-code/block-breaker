@@ -6,6 +6,7 @@
 #include "entities/entity.hpp"
 #include "entities/paddle.hpp"
 #include "helper/material.hpp"
+#include "light.hpp"
 #include "yoshix.h"
 
 // -----------------------------------------------------------------------------

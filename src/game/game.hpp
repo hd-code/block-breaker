@@ -40,7 +40,7 @@ private:
     SBlock bedRocks[NUM_OF_BED_ROCKS];
     SBlock blocks[NUM_OF_BLOCKS];
 
-    unsigned int startOfBlocks;
+    unsigned int startOfBlocks; // index in entities, where the blocks start
 
     std::vector<SEntity*> entities;
 
