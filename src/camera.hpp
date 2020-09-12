@@ -10,6 +10,6 @@ struct SCamera {
 };
 
 struct SLight {
-    float direction[3] = { -1.0f, -0.7f, 2.0f };
-    float ambient[3] = { 0.1f, 0.1f, 0.1f };
+    float direction[3] = { -1.0f, -0.7f, 4.0f };
+    float ambient[3] = { 0.2f, 0.2f, 0.2f };
 };

@@ -33,7 +33,7 @@ const ETexture TEXTURE = ETexture::PADDLE;
 const float SPEC_EXP   = 2.0f;
 const float POSITION[] = { 0.0f, -4.0f, 0.0f };
 
-const float SIZE[] = { 2.0f, 0.5f, 1.0f };
+const float SIZE[] = { 1.5f, 0.2f, 1.0f };
 const float SPEED  = 0.1f;
 
 SPaddle CreatePaddle(gfx::BHandle* paddleMesh) {

@@ -9,7 +9,7 @@
 
 // -----------------------------------------------------------------------------
 
-const float RANDOM_DIRECTION_CHANGE = 0.1f;
+const float WEIGHT_OF_PADDLE_ANGLE = 0.8f;
 
 void SBall::move() {
     this->position[0] += this->speed * this->direction[0];
@@ -74,26 +74,18 @@ bool SBall::handleCollision(SBlock &block) {
 }
 
 bool SBall::handleCollision(const SPaddle &paddle) {
-    float xDiff = std::fabs(this->position[0] - paddle.position[0]);
-    float yDiff = std::fabs(this->position[1] - paddle.position[1]);
+    if (this->position[1] - this->radius > paddle.position[1] + paddle.height / 2.0f) {
+        return false;
+    }
 
-    xDiff -= this->radius + (paddle.width  / 2.0f);
-    yDiff -= this->radius + (paddle.height / 2.0f);
+    float xDiff = this->position[0] - paddle.position[0];
+    float xOffset = this->radius + (paddle.width  / 2.0f);
 
-    // collision
-    if (xDiff <= 0 && yDiff <= 0) {
-        this->changeDirection(ECollisionAt::BOTTOM);
-        if (xDiff > yDiff) { // horizontal collision
-            if (this->position[0] < paddle.position[0]) {
-                this->changeDirection(ECollisionAt::RIGHT);
-            } else {
-                this->changeDirection(ECollisionAt::LEFT);
-            }
-        }
+    if (std::fabs(xDiff) < xOffset) { // collision
+        this->changeDirection(ECollisionAt::BOTTOM); // deflect ball upwards
 
-        // alter direction angle just a little bit, to mix up game play
-        float randomDirChange = GetRandom(-RANDOM_DIRECTION_CHANGE, RANDOM_DIRECTION_CHANGE);
-        this->direction[0] += randomDirChange;
+        float xDirection = xDiff / xOffset;
+        this->direction[0] += WEIGHT_OF_PADDLE_ANGLE * (xDirection - this->direction[0]);
         gfx::GetNormalizedVector(this->direction, this->direction);
 
         return true;
@@ -137,15 +129,15 @@ void SBall::changeDirection(ECollisionAt collisionAt) {
 // -----------------------------------------------------------------------------
 
 const ETexture TEXTURE = ETexture::BALL;
-const float SPEC_EXP   = 100.0f;
+const float SPEC_EXP   = 80.0f;
 const float POSITION[] = { 0.0f, 0.0f, 0.0f };
 
 const float RADIUS = 0.3f;
-const float SPEED = 0.06f;
+const float SPEED = 0.14f;
 
 const float DIRECTION[] = { 0.0f, -1.0f, 0.0f };
-const float DIR_MIN_X = 0.5f;
-const float DIR_MAX_X = 1.5f;
+const float DIR_MIN_X = 0.2f;
+const float DIR_MAX_X = 0.5f;
 
 SBall CreateBall(gfx::BHandle* ballMesh) {
     SBall ball;
