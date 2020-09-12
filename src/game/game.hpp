@@ -26,6 +26,8 @@ private:
     void advanceGame(EKey key);
 
     void handleCollisions();
+    
+    void initGame();
 
     bool isLoss();
     bool isWin();
@@ -41,4 +43,8 @@ private:
     unsigned int startOfBlocks;
 
     std::vector<SEntity*> entities;
+
+    gfx::BHandle* ballMesh;
+    gfx::BHandle* blockMesh;
+    gfx::BHandle* paddleMesh;
 };

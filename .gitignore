@@ -7,7 +7,7 @@ build
 # Visual Studio
 .vs
 
-# vscode
+# Visual Studio Code
 .vscode
 
 # Windows
