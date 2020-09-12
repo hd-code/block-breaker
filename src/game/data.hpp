@@ -6,8 +6,8 @@
 
 const float BORDER_TOP    =  4.5f;
 const float BORDER_BOTTOM = -4.5f;
-const float BORDER_RIGHT  =  4.5f;
-const float BORDER_LEFT   = -4.5f;
+const float BORDER_RIGHT  =  2.5f;
+const float BORDER_LEFT   = -2.5f;
 
 // -----------------------------------------------------------------------------
 

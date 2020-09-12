@@ -6,11 +6,12 @@
 
 void SPaddle::move(EKey key, float leftLimit, float rightLimit) {
     float newX = this->position[0];
+    float halfWidth = this->width / 2.0f;
 
     switch (key) {
     case EKey::LEFT:
         newX -= this->speed;
-        if (newX > leftLimit) {
+        if (newX - halfWidth > leftLimit) {
             this->position[0] = newX;
             this->updateWorldMatrix();
         }
@@ -18,7 +19,7 @@ void SPaddle::move(EKey key, float leftLimit, float rightLimit) {
 
     case EKey::RIGHT:
         newX += this->speed;
-        if (newX < rightLimit) {
+        if (newX + halfWidth < rightLimit) {
             this->position[0] = newX;
             this->updateWorldMatrix();
         }

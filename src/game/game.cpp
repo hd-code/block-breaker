@@ -61,13 +61,8 @@ void CGame::onUpdate(EKey key) {
 
 // -----------------------------------------------------------------------------
 
-const float LEFT_BORDER  = -5.0f;
-const float RIGHT_BORDER =  5.0f;
-
-const float BOTTOM_BORDER =  -5.0f;
-
 void CGame::advanceGame(EKey key) {
-    this->paddle.move(key, LEFT_BORDER, RIGHT_BORDER);
+    this->paddle.move(key, BORDER_LEFT, BORDER_RIGHT);
     this->handleCollisions();
     this->ball.move();
 
@@ -81,6 +76,8 @@ void CGame::advanceGame(EKey key) {
 }
 
 void CGame::handleCollisions() {
+    this->ball.handleCollision(this->paddle);
+
     for (size_t i = 0; i < NUM_OF_BED_ROCKS; i++) {
         this->ball.handleCollision(this->bedRocks[i]);
     }
@@ -89,18 +86,17 @@ void CGame::handleCollisions() {
         SBlock* block = (SBlock*)(this->entities[i]);
         bool collided = this->ball.handleCollision(*block);
         
-        if (!collided) {
-            continue;
-        }
-
-        if (block->isBroken()) {
-            this->entities.erase(this->entities.begin() + i);
+        if (collided) {
+            if (block->isBroken()) {
+                this->entities.erase(this->entities.begin() + i);
+            }
+            break;
         }
     }
 }
 
 bool CGame::isLoss() {
-    return this->ball.isOnGround(BOTTOM_BORDER);
+    return this->ball.isOnGround(BORDER_BOTTOM);
 }
 
 bool CGame::isWin() {

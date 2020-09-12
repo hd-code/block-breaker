@@ -7,6 +7,8 @@
 #include <cmath>
 #include <vector>
 
+#include <iostream>
+
 // -----------------------------------------------------------------------------
 
 void SBall::move() {
@@ -21,11 +23,14 @@ bool SBall::handleCollision(SBlock &block) {
     float xDiff = std::fabs(this->position[0] - block.position[0]);
     float yDiff = std::fabs(this->position[1] - block.position[1]);
 
-    xDiff -= this->radius - block.size;
-    yDiff -= this->radius - block.size;
+    float offset = this->radius + (block.size / 2.0f);
+
+    xDiff -= offset;
+    yDiff -= offset;
 
     // collision
     if (xDiff <= 0 && yDiff <= 0) {
+        block.onCollision();
         this->changeDirection(xDiff > yDiff);
         return true;
     }
@@ -37,8 +42,8 @@ bool SBall::handleCollision(const SPaddle &paddle) {
     float xDiff = std::fabs(this->position[0] - paddle.position[0]);
     float yDiff = std::fabs(this->position[1] - paddle.position[1]);
 
-    xDiff -= this->radius - paddle.width;
-    yDiff -= this->radius - paddle.height;
+    xDiff -= this->radius + (paddle.width  / 2.0f);
+    yDiff -= this->radius + (paddle.height / 2.0f);
 
     // collision
     if (xDiff <= 0 && yDiff <= 0) {
@@ -67,8 +72,8 @@ const ETexture TEXTURE = ETexture::BALL;
 const float SPEC_EXP   = 100.0f;
 const float POSITION[] = { 0.0f, 0.0f, 0.0f };
 
-const float RADIUS = 0.5f;
-const float SPEED = 0.01f;
+const float RADIUS = 0.3f;
+const float SPEED = 0.06f;
 
 const float DIRECTION[] = { 0.0f, -1.0f, 0.0f };
 const float DIR_MIN_X = 0.5f;
