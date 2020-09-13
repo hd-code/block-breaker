@@ -13,7 +13,7 @@
 
 // -----------------------------------------------------------------------------
 
-enum class EGameStatus { START, ON, PAUSED, WIN, LOSS };
+enum class EGameStatus { START, ON, PAUSED, WON, LOST };
 
 class CGame {
 public:

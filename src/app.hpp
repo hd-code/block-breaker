@@ -54,7 +54,7 @@ class CApplication : public gfx::IApplication {
         virtual bool InternOnReleaseMaterials();
         virtual bool InternOnCreateMeshes();
         virtual bool InternOnReleaseMeshes();
-        virtual bool InternOnResize(int _Width, int _Height);
+        virtual bool InternOnResize(int width, int height);
         virtual bool InternOnKeyEvent(unsigned int key, bool isDown, bool altDown);
         virtual bool InternOnUpdate();
         virtual bool InternOnFrame();

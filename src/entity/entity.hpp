@@ -14,6 +14,7 @@ struct SEntity {
     float position[3];
     float worldMatrix[16];
 
+protected:
     void updateWorldMatrix();
 };
 
@@ -25,7 +26,7 @@ enum class ETexture {
     LENGTH // number of textures
 };
 
-static const char* TEXTURES[] = {
+static const char* TEXTURE_FILES[] = {
     "ball.png",
     "paddle.jpg",
     "bed-rock.jpg",
@@ -40,14 +41,14 @@ static const char* TEXTURES[] = {
 
 // -----------------------------------------------------------------------------
 
-const int FLOATS_IN_VERTEX = 8; // postion 3, normal 3, texture 2
-
 const int NUM_OF_INPUTS = 3;
 static gfx::SInputElement INPUT_ELEMENTS[] = {
-    "POSITION", gfx::SInputElement::Float3,
-    "NORMAL",   gfx::SInputElement::Float3,
-    "TEXCOORD", gfx::SInputElement::Float2,
+    { "POSITION", gfx::SInputElement::Float3 },
+    { "NORMAL",   gfx::SInputElement::Float3 },
+    { "TEXCOORD", gfx::SInputElement::Float2 },
 };
+
+const int FLOATS_IN_VERTEX = 8; // postion 3, normal 3, texture 2
 
 // -----------------------------------------------------------------------------
 

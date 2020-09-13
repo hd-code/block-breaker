@@ -90,15 +90,3 @@ float4 PShader(PSInput input) : SV_Target {
         default: return Tex0.Sample(Sampler, input.texCoords) * light;
     }
 }
-
-// Texture2D getTexture() {
-//     switch (TextureIndex) {
-//         case 0: return Tex0;
-//         case 1: return Tex1;
-//         case 2: return Tex2;
-//         case 3: return Tex3;
-//         case 4: return Tex4;
-//         case 5: return Tex5;
-//         default: return Tex0;
-//     }
-// }

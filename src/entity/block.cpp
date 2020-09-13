@@ -2,31 +2,6 @@
 
 // -----------------------------------------------------------------------------
 
-bool SBlock::isBroken() {
-    switch (this->type) {
-    case EBlockType::BED_ROCK:
-        return false;
-
-    case EBlockType::NORMAL:
-        return this->hits >= 1;
-
-    case EBlockType::HARD:
-        return this->hits >= 2;
-    }
-
-    return false;
-}
-
-void SBlock::onCollision() {
-    this->hits++;
-
-    if (this->type == EBlockType::HARD) {
-        this->texture = ETexture::BLOCK_CRACKED;
-    }
-}
-
-// -----------------------------------------------------------------------------
-
 const float SPEC_EXP = 40.0f;
 
 const float SIZE = 1.0f;
@@ -40,23 +15,47 @@ ETexture getBlockTexture(EBlockType type) {
     }
 }
 
-SBlock CreateBlock(gfx::BHandle* blockMesh, EBlockType type, float position[3]) {
-    SBlock block;
-    block.mesh = blockMesh;
-    block.texture = getBlockTexture(type);
-    block.specularExponent = SPEC_EXP;
+SBlock::SBlock() {}
 
-    block.position[0] = position[0];
-    block.position[1] = position[1];
-    block.position[2] = position[2];
+SBlock::SBlock(gfx::BHandle* blockMesh, EBlockType type, float position[3]) {
+    this->mesh = blockMesh;
+    this->texture = getBlockTexture(type);
+    this->specularExponent = SPEC_EXP;
 
-    block.hits = 0;
-    block.size = SIZE;
-    block.type = type;
+    this->position[0] = position[0];
+    this->position[1] = position[1];
+    this->position[2] = position[2];
 
-    block.updateWorldMatrix();
+    this->hits = 0;
+    this->size = SIZE;
+    this->type = type;
 
-    return block;
+    this->updateWorldMatrix();
+}
+
+// -----------------------------------------------------------------------------
+
+bool SBlock::isBroken() {
+    switch (this->type) {
+        case EBlockType::BED_ROCK:
+            return false;
+
+        case EBlockType::NORMAL:
+            return this->hits >= 1;
+
+        case EBlockType::HARD:
+            return this->hits >= 2;
+    }
+
+    return false;
+}
+
+void SBlock::onCollision() {
+    this->hits++;
+
+    if (this->type == EBlockType::HARD) {
+        this->texture = ETexture::BLOCK_CRACKED;
+    }
 }
 
 // --- Mesh --------------------------------------------------------------------

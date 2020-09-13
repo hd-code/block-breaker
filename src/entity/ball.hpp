@@ -8,10 +8,6 @@
 // -----------------------------------------------------------------------------
 
 struct SBall : SEntity {
-    float direction[3];
-    float radius;
-    float speed;
-
     SBall();
     SBall(gfx::BHandle* ballMesh);
 
@@ -24,8 +20,11 @@ struct SBall : SEntity {
     void move();
 
 private:
-    enum class ECollisionAt { TOP, BOTTOM, LEFT, RIGHT };
+    float direction[3];
+    float radius;
+    float speed;
 
+    enum class ECollisionAt { TOP, BOTTOM, LEFT, RIGHT };
     void changeDirection(ECollisionAt collisionAt);
 };
 

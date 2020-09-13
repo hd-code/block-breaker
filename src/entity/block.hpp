@@ -8,17 +8,18 @@
 enum class EBlockType { BED_ROCK, NORMAL, HARD };
 
 struct SBlock : SEntity {
-    EBlockType type;
-    unsigned int hits;
     float size;
+    
+    SBlock();
+    SBlock(gfx::BHandle* blockMesh, EBlockType type, float position[3]);
 
     bool isBroken();
     void onCollision();
+
+private:
+    EBlockType type;
+    unsigned int hits;
 };
-
-// -----------------------------------------------------------------------------
-
-SBlock CreateBlock(gfx::BHandle* blockMesh, EBlockType type, float position[3]);
 
 // -----------------------------------------------------------------------------
 

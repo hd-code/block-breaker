@@ -2,13 +2,46 @@
 
 // -----------------------------------------------------------------------------
 
-void SDialog::calcAnimationSteps() {
-    this->positionStep[0] = - this->animation.position[0] / this->animation.frame;
-    this->positionStep[1] = - this->animation.position[1] / this->animation.frame;
-    this->positionStep[2] = - this->animation.position[2] / this->animation.frame;
+const float SPEC_EXP   = 120.0f;
+const float POSITION[] = { 0.0f, 0.0f, -2.0f };
 
-    this->scaleStep = (1.0f - this->animation.scale) / this->animation.frame;
+const float SIZE[] = { 5.0f, 2.0f, 0.1f };
+
+const float ANI_POSITION[] = { 0.0f, 0.0f, -3.0f }; // starting position of animation (relative position)
+const float ANI_SCALE = 0.0f; // starting scale of animation (will be 1 in the end)
+const unsigned int ANI_FRAMES = 10; // number of frames the animation takes
+
+ETexture getDialogTexture(EDialogType type) {
+    switch (type) {
+        case EDialogType::START: return ETexture::START;
+        case EDialogType::PAUSE: return ETexture::PAUSE;
+        case EDialogType::LOSS:  return ETexture::LOSS;
+        case EDialogType::WIN:   return ETexture::WIN;
+        default: return ETexture::PAUSE;
+    }
 }
+
+SDialog::SDialog() {}
+
+SDialog::SDialog(gfx::BHandle* dialogMesh, EDialogType type) {
+    this->mesh = dialogMesh;
+    this->texture = getDialogTexture(type);
+    this->specularExponent = SPEC_EXP;
+
+    this->position[0] = POSITION[0];
+    this->position[1] = POSITION[1];
+    this->position[2] = POSITION[2];
+
+    this->animation.position[0] = ANI_POSITION[0];
+    this->animation.position[1] = ANI_POSITION[1];
+    this->animation.position[2] = ANI_POSITION[2];
+    this->animation.scale = ANI_SCALE;
+    this->animation.frame = ANI_FRAMES;
+
+    this->calcAnimationSteps();
+}
+
+// -----------------------------------------------------------------------------
 
 void SDialog::onFrame() {
     if (this->animation.frame <= 0) {
@@ -22,6 +55,16 @@ void SDialog::onFrame() {
     this->animation.frame--;
 
     this->calcWorldMatrix();
+}
+
+// -----------------------------------------------------------------------------
+
+void SDialog::calcAnimationSteps() {
+    this->positionStep[0] = - this->animation.position[0] / this->animation.frame;
+    this->positionStep[1] = - this->animation.position[1] / this->animation.frame;
+    this->positionStep[2] = - this->animation.position[2] / this->animation.frame;
+
+    this->scaleStep = (1.0f - this->animation.scale) / this->animation.frame;
 }
 
 void SDialog::calcWorldMatrix() {
@@ -39,48 +82,6 @@ void SDialog::calcWorldMatrix() {
     this->updateWorldMatrix();
 
     gfx::MulMatrix(aniMatrix, this->worldMatrix, this->worldMatrix);
-}
-
-// -----------------------------------------------------------------------------
-
-const float SPEC_EXP   = 120.0f;
-const float POSITION[] = { 0.0f, 0.0f, -2.0f };
-
-const float SIZE[] = { 5.0f, 2.0f, 0.1f };
-
-const float ANI_POSITION[] = { 0.0f, 0.0f, -3.0f };
-const float ANI_SCALE = 0.0f;
-const unsigned int ANI_FRAMES = 10;
-
-ETexture getDialogTexture(EDialogType type) {
-    switch (type) {
-        case EDialogType::START: return ETexture::START;
-        case EDialogType::PAUSE: return ETexture::PAUSE;
-        case EDialogType::LOSS:  return ETexture::LOSS;
-        case EDialogType::WIN:   return ETexture::WIN;
-        default: return ETexture::PAUSE;
-    }
-}
-
-SDialog CreateDialog(gfx::BHandle* dialogMesh, EDialogType type) {
-    SDialog dialog;
-    dialog.mesh = dialogMesh;
-    dialog.texture = getDialogTexture(type);
-    dialog.specularExponent = SPEC_EXP;
-
-    dialog.position[0] = POSITION[0];
-    dialog.position[1] = POSITION[1];
-    dialog.position[2] = POSITION[2];
-
-    dialog.animation.position[0] = ANI_POSITION[0];
-    dialog.animation.position[1] = ANI_POSITION[1];
-    dialog.animation.position[2] = ANI_POSITION[2];
-    dialog.animation.scale = ANI_SCALE;
-    dialog.animation.frame = ANI_FRAMES;
-
-    dialog.calcAnimationSteps();
-
-    return dialog;
 }
 
 // -----------------------------------------------------------------------------

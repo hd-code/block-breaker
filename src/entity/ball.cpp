@@ -9,15 +9,47 @@
 
 // -----------------------------------------------------------------------------
 
-const float WEIGHT_OF_PADDLE_ANGLE = 0.8f;
+const ETexture TEXTURE = ETexture::BALL;
+const float SPEC_EXP   = 80.0f;
+const float POSITION[] = { 0.0f, 0.0f, 0.0f };
 
-void SBall::move() {
-    this->position[0] += this->speed * this->direction[0];
-    this->position[1] += this->speed * this->direction[1];
-    this->position[2] += this->speed * this->direction[2];
+const float RADIUS = 0.3f;
+const float SPEED = 0.15f;
+
+const float DIRECTION[] = { 0.0f, -1.0f, 0.0f };
+const float DIR_MIN_X = 0.1f;
+const float DIR_MAX_X = 0.3f;
+
+SBall::SBall() {}
+
+SBall::SBall(gfx::BHandle* ballMesh) {
+    this->mesh = ballMesh;
+    this->texture = TEXTURE;
+    this->specularExponent = SPEC_EXP;
+
+    this->position[0] = POSITION[0];
+    this->position[1] = POSITION[1];
+    this->position[2] = POSITION[2];
+
+    this->radius = RADIUS;
+    this->speed  = SPEED;
+
+    // ball will always start with a slight random angle
+    this->direction[0] = GetRandom(DIR_MIN_X, DIR_MAX_X);
+    if (GetRandom() < 0.5f) {
+        this->direction[0] *= -1.0f;
+    }
+    this->direction[1] = -1.0f;
+    this->direction[2] = 0.0f;
+
+    gfx::GetNormalizedVector(this->direction, this->direction);
 
     this->updateWorldMatrix();
 }
+
+// -----------------------------------------------------------------------------
+
+const float WEIGHT_OF_PADDLE_ANGLE = 0.8f;
 
 bool SBall::handleCollision(float topBorder, float leftBorder, float rightBorder) {
     if (topBorder < this->position[1] + this->radius) {
@@ -98,72 +130,42 @@ bool SBall::isOnGround(float groundLevel) {
     return groundLevel > this->position[1];
 }
 
-void SBall::changeDirection(ECollisionAt collisionAt) {
-    switch (collisionAt) {
-    case ECollisionAt::TOP:
-        if (this->direction[1] > 0) {
-            this->direction[1] *= -1.0f;
-        }
-        break;
+void SBall::move() {
+    this->position[0] += this->speed * this->direction[0];
+    this->position[1] += this->speed * this->direction[1];
+    this->position[2] += this->speed * this->direction[2];
 
-    case ECollisionAt::BOTTOM:
-        if (this->direction[1] < 0) {
-            this->direction[1] *= -1.0f;
-        }
-        break;
-
-    case ECollisionAt::LEFT:
-        if (this->direction[0] < 0) {
-            this->direction[0] *= -1.0f;
-        }
-        break;
-
-    case ECollisionAt::RIGHT:
-        if (this->direction[0] > 0) {
-            this->direction[0] *= -1.0f;
-        }
-        break;
-    }
+    this->updateWorldMatrix();
 }
 
 // -----------------------------------------------------------------------------
 
-const ETexture TEXTURE = ETexture::BALL;
-const float SPEC_EXP   = 80.0f;
-const float POSITION[] = { 0.0f, 0.0f, 0.0f };
+void SBall::changeDirection(ECollisionAt collisionAt) {
+    switch (collisionAt) {
+        case ECollisionAt::TOP:
+            if (this->direction[1] > 0) {
+                this->direction[1] *= -1.0f;
+            }
+            break;
 
-const float RADIUS = 0.3f;
-const float SPEED = 0.15f;
+        case ECollisionAt::BOTTOM:
+            if (this->direction[1] < 0) {
+                this->direction[1] *= -1.0f;
+            }
+            break;
 
-const float DIRECTION[] = { 0.0f, -1.0f, 0.0f };
-const float DIR_MIN_X = 0.1f;
-const float DIR_MAX_X = 0.3f;
+        case ECollisionAt::LEFT:
+            if (this->direction[0] < 0) {
+                this->direction[0] *= -1.0f;
+            }
+            break;
 
-SBall::SBall() {}
-
-SBall::SBall(gfx::BHandle* ballMesh) {
-    this->mesh = ballMesh;
-    this->texture = TEXTURE;
-    this->specularExponent = SPEC_EXP;
-
-    this->position[0] = POSITION[0];
-    this->position[1] = POSITION[1];
-    this->position[2] = POSITION[2];
-
-    this->radius = RADIUS;
-    this->speed  = SPEED;
-
-    // ball will always start with a slight random angle
-    this->direction[0] = GetRandom(DIR_MIN_X, DIR_MAX_X);
-    if (GetRandom() < 0.5f) {
-        this->direction[0] *= -1.0f;
+        case ECollisionAt::RIGHT:
+            if (this->direction[0] > 0) {
+                this->direction[0] *= -1.0f;
+            }
+            break;
     }
-    this->direction[1] = -1.0f;
-    this->direction[2] = 0.0f;
-
-    gfx::GetNormalizedVector(this->direction, this->direction);
-
-    this->updateWorldMatrix();
 }
 
 // --- Mesh --------------------------------------------------------------------
@@ -239,7 +241,7 @@ void subdivideTriangle(std::vector<SVertex> &verts, std::vector<STriangle> &tria
 void subdivideTriangles(std::vector<SVertex> &verts, std::vector<STriangle> &triangles) {
     int numOfTriangles = triangles.size();
     for (int i = 0; i < numOfTriangles; i++) {
-        subdivideTriangle(verts, triangles, 0); // original triangle is delted and new ones are appended
+        subdivideTriangle(verts, triangles, 0); // original triangle is deleted and new ones are appended
     }
 }
 

@@ -9,14 +9,15 @@
 struct SPaddle : SEntity {
     float height;
     float width;
-    float speed;
+    
+    SPaddle();
+    SPaddle(gfx::BHandle* paddleMesh);
 
     void move(EKey key, float leftLimit, float rightLimit);
+
+private:
+    float speed;
 };
-
-// -----------------------------------------------------------------------------
-
-SPaddle CreatePaddle(gfx::BHandle* paddleMesh);
 
 // -----------------------------------------------------------------------------
 

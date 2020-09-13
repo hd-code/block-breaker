@@ -17,7 +17,7 @@ struct SBlockList {
 };
 
 const unsigned int NUM_OF_BED_ROCKS = 29;
-const SBlockList BED_ROCKS[] = {
+static SBlockList BED_ROCKS[] = {
     // top row
     { EBlockType::BED_ROCK, -4.0f, 5.0f, 0.0f },
     { EBlockType::BED_ROCK, -3.0f, 5.0f, 0.0f },
@@ -52,7 +52,7 @@ const SBlockList BED_ROCKS[] = {
 };
 
 const unsigned int NUM_OF_BLOCKS = 21;
-const SBlockList BLOCKS[] = {
+static SBlockList BLOCKS[] = {
     { EBlockType::HARD,   -3.0f, 3.0f, 0.0f },
     { EBlockType::NORMAL, -2.0f, 3.0f, 0.0f },
     { EBlockType::HARD,   -1.0f, 3.0f, 0.0f },

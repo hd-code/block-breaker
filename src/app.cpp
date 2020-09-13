@@ -4,7 +4,6 @@
 #include "entity/ball.hpp"
 #include "entity/block.hpp"
 #include "entity/dialog.hpp"
-#include "entity/entity.hpp"
 #include "entity/paddle.hpp"
 #include "helper/material.hpp"
 #include "light.hpp"
@@ -57,7 +56,7 @@ bool CApplication::InternOnCreateTextures() {
     std::string dataDir = "..\\data\\";
 
     for (int i = 0; i < int(ETexture::LENGTH); i++) {
-        std::string file = dataDir + TEXTURES[i];
+        std::string file = dataDir + TEXTURE_FILES[i];
         gfx::CreateTexture(file.c_str(), &this->textures[i]);
     }
 
@@ -204,23 +203,23 @@ bool CApplication::InternOnResize(int width, int height) {
 
 bool CApplication::InternOnKeyEvent(unsigned int key, bool isDown, bool altDown) {
     switch (key) {
-    case KEY_SPACE:
-        if (!isDown) { // trigger only once when key was released
-            this->key = EKey::SPACE;
-            return true;
-        }
-        break;
+        case KEY_SPACE:
+            if (!isDown) { // trigger only once when key was released
+                this->key = EKey::SPACE;
+                return true;
+            }
+            break;
 
-    case KEY_LEFT:
-        this->key = EKey::LEFT;
-        break;
+        case KEY_LEFT:
+            this->key = EKey::LEFT;
+            break;
 
-    case KEY_RIGHT:
-        this->key = EKey::RIGHT;
-        break;
+        case KEY_RIGHT:
+            this->key = EKey::RIGHT;
+            break;
 
-    default:
-        this->key = EKey::NONE;
+        default:
+            this->key = EKey::NONE;
     }
 
     if (!isDown) {

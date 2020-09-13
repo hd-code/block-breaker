@@ -14,22 +14,20 @@ struct SAnimation {
 };
 
 struct SDialog : SEntity {
-    SAnimation animation;
-
-    void calcAnimationSteps();
+    SDialog();
+    SDialog(gfx::BHandle* dialogMesh, EDialogType type);
 
     void onFrame();
 
 private:
+    SAnimation animation;
+
     float positionStep[3];
     float scaleStep;
 
+    void calcAnimationSteps();
     void calcWorldMatrix();
 };
-
-// -----------------------------------------------------------------------------
-
-SDialog CreateDialog(gfx::BHandle* dialogMesh, EDialogType type);
 
 // -----------------------------------------------------------------------------
 
