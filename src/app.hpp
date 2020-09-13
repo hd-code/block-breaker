@@ -1,6 +1,6 @@
 #pragma once
 
-#include "entities/entity.hpp"
+#include "entity/entity.hpp"
 #include "game/game.hpp"
 #include "key.hpp"
 #include "yoshix.h"
@@ -16,8 +16,7 @@ class CApplication : public gfx::IApplication {
 
     private:
         // Textures
-        const static int NUM_OF_TEXTURES = 6;
-        gfx::BHandle textures[NUM_OF_TEXTURES];
+        gfx::BHandle textures[int(ETexture::LENGTH)];
 
         // Constant Buffers
         gfx::BHandle generalVSBuffer;
@@ -35,6 +34,7 @@ class CApplication : public gfx::IApplication {
         // Meshes
         gfx::BHandle ballMesh;
         gfx::BHandle blockMesh;
+        gfx::BHandle dialogMesh;
         gfx::BHandle paddleMesh;
 
         // Game

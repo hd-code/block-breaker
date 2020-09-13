@@ -1,10 +1,11 @@
 #include "app.hpp"
 
 #include "camera.hpp"
-#include "entities/ball.hpp"
-#include "entities/block.hpp"
-#include "entities/entity.hpp"
-#include "entities/paddle.hpp"
+#include "entity/ball.hpp"
+#include "entity/block.hpp"
+#include "entity/dialog.hpp"
+#include "entity/entity.hpp"
+#include "entity/paddle.hpp"
 #include "helper/material.hpp"
 #include "light.hpp"
 #include "yoshix.h"
@@ -27,6 +28,7 @@ CApplication::CApplication() :
     // Meshes
     , ballMesh(nullptr)
     , blockMesh(nullptr)
+    , dialogMesh(nullptr)
     , paddleMesh(nullptr)
     // Game
     , game(nullptr)
@@ -38,7 +40,7 @@ CApplication::~CApplication() {}
 // -----------------------------------------------------------------------------
 
 bool CApplication::InternOnStartup() {
-    this->game = new CGame(&this->ballMesh, &this->blockMesh, &this->paddleMesh);
+    this->game = new CGame(&this->ballMesh, &this->blockMesh, &this->dialogMesh, &this->paddleMesh);
     return true;
 }
 
@@ -57,7 +59,11 @@ bool CApplication::InternOnCreateTextures() {
         "..\\data\\bed-rock.jpg",
         "..\\data\\block.jpg",
         "..\\data\\block-hard.jpg",
-        "..\\data\\block-cracked.jpg"
+        "..\\data\\block-cracked.jpg",
+        "..\\data\\dialog-start.jpg",
+        "..\\data\\dialog-pause.jpg",
+        "..\\data\\dialog-lost.jpg",
+        "..\\data\\dialog-won.jpg",
     };
 
     for (int i = 0; i < numOfTextures; i++) {
@@ -169,6 +175,7 @@ bool CApplication::InternOnReleaseMaterials() {
 bool CApplication::InternOnCreateMeshes() {
     this->ballMesh   = CreateBallMesh(this->material);
     this->blockMesh  = CreateBlockMesh(this->material);
+    this->dialogMesh = CreateDialogMesh(this->material);
     this->paddleMesh = CreatePaddleMesh(this->material);
 
     return true;

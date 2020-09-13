@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../entities/block.hpp"
+#include "../entity/block.hpp"
 
 // -----------------------------------------------------------------------------
 

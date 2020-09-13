@@ -8,6 +8,10 @@ Texture2D Tex2 : register(t2);
 Texture2D Tex3 : register(t3);
 Texture2D Tex4 : register(t4);
 Texture2D Tex5 : register(t5);
+Texture2D Tex6 : register(t6);
+Texture2D Tex7 : register(t7);
+Texture2D Tex8 : register(t8);
+Texture2D Tex9 : register(t9);
 
 // --- Constant Buffers --------------------------------------------------------
 
@@ -79,6 +83,10 @@ float4 PShader(PSInput input) : SV_Target {
         case 3: return Tex3.Sample(Sampler, input.texCoords) * light;
         case 4: return Tex4.Sample(Sampler, input.texCoords) * light;
         case 5: return Tex5.Sample(Sampler, input.texCoords) * light;
+        case 6: return Tex6.Sample(Sampler, input.texCoords) * light;
+        case 7: return Tex7.Sample(Sampler, input.texCoords) * light;
+        case 8: return Tex8.Sample(Sampler, input.texCoords) * light;
+        case 9: return Tex9.Sample(Sampler, input.texCoords) * light;
         default: return Tex0.Sample(Sampler, input.texCoords) * light;
     }
 }

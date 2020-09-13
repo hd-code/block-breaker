@@ -12,10 +12,10 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\app.cpp" />
-    <ClCompile Include="..\..\src\entities\ball.cpp" />
-    <ClCompile Include="..\..\src\entities\block.cpp" />
-    <ClCompile Include="..\..\src\entities\entity.cpp" />
-    <ClCompile Include="..\..\src\entities\paddle.cpp" />
+    <ClCompile Include="..\..\src\entity\ball.cpp" />
+    <ClCompile Include="..\..\src\entity\block.cpp" />
+    <ClCompile Include="..\..\src\entity\entity.cpp" />
+    <ClCompile Include="..\..\src\entity\paddle.cpp" />
     <ClCompile Include="..\..\src\game\game.cpp" />
     <ClCompile Include="..\..\src\helper\material.cpp" />
     <ClCompile Include="..\..\src\helper\math.cpp" />
@@ -25,10 +25,10 @@
   <ItemGroup>
     <ClInclude Include="..\..\src\app.hpp" />
     <ClInclude Include="..\..\src\camera.hpp" />
-    <ClInclude Include="..\..\src\entities\ball.hpp" />
-    <ClInclude Include="..\..\src\entities\block.hpp" />
-    <ClInclude Include="..\..\src\entities\entity.hpp" />
-    <ClInclude Include="..\..\src\entities\paddle.hpp" />
+    <ClInclude Include="..\..\src\entity\ball.hpp" />
+    <ClInclude Include="..\..\src\entity\block.hpp" />
+    <ClInclude Include="..\..\src\entity\entity.hpp" />
+    <ClInclude Include="..\..\src\entity\paddle.hpp" />
     <ClInclude Include="..\..\src\game\data.hpp" />
     <ClInclude Include="..\..\src\game\game.hpp" />
     <ClInclude Include="..\..\src\helper\material.hpp" />

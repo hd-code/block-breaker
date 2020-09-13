@@ -2,13 +2,16 @@
 
 // -----------------------------------------------------------------------------
 
-CGame::CGame(gfx::BHandle* ballMesh, gfx::BHandle* blockMesh, gfx::BHandle* paddleMesh)
-    : status(EGameStatus::PAUSED)
+CGame::CGame(gfx::BHandle* ballMesh, gfx::BHandle* blockMesh, gfx::BHandle* dialogMesh, gfx::BHandle* paddleMesh)
+    : status(EGameStatus::START)
+    , dialogShown(true)
     , ballMesh(ballMesh)
     , blockMesh(blockMesh)
+    , dialogMesh(dialogMesh)
     , paddleMesh(paddleMesh)
 {
     this->initGame();
+    this->showDialog();
 }
 
 CGame::~CGame() {
@@ -20,26 +23,56 @@ std::vector<SEntity*>* CGame::getEntities() {
 }
 
 void CGame::onUpdate(EKey key) {
+    if (this->dialogShown) {
+        this->dialog.onFrame();
+    }
+
     switch (this->status) {
+    case EGameStatus::START:
+        if (key == EKey::SPACE) {
+            this->status = EGameStatus::ON;
+            this->removeDialog();
+        }
+        break;
+
     case EGameStatus::PAUSED:
         if (key == EKey::SPACE) {
             this->status = EGameStatus::ON;
+            this->removeDialog();
         }
         break;
 
     case EGameStatus::ON:
         this->advanceGame(key);
+
         if (key == EKey::SPACE) {
             this->status = EGameStatus::PAUSED;
+            this->showDialog();
+            break;
         }
+
+        if (this->isLoss()) {
+            this->status = EGameStatus::LOSS;
+            this->showDialog();
+            break;
+        }
+
+        if (this->isWin()) {
+            this->status = EGameStatus::WIN;
+            this->showDialog();
+            break;
+        }
+
         break;
 
     case EGameStatus::WIN:
+    case EGameStatus::LOSS:
+        if (key == EKey::SPACE) {
+            this->initGame();
+            this->status = EGameStatus::ON;
+            this->removeDialog();
+        }
         break;
-
-    case EGameStatus::LOST:
-        break;
-
     }
 }
 
@@ -49,14 +82,6 @@ void CGame::advanceGame(EKey key) {
     this->paddle.move(key, BORDER_LEFT, BORDER_RIGHT);
     this->handleCollisions();
     this->ball.move();
-
-    // if (this->isWin()) {
-    //     this->status = EGameStatus::WIN;
-    // }
-
-    if (this->isLoss()) {
-        this->status = EGameStatus::LOST;
-    }
 }
 
 void CGame::handleCollisions() {
@@ -106,4 +131,25 @@ bool CGame::isLoss() {
 
 bool CGame::isWin() {
     return this->startOfBlocks >= this->entities.size();
+}
+
+void CGame::showDialog() {
+    EDialogType type;
+
+    switch (this->status) {
+    case EGameStatus::START:  type = EDialogType::START; break;
+    case EGameStatus::PAUSED: type = EDialogType::PAUSE; break;
+    case EGameStatus::LOSS:   type = EDialogType::LOSS;  break;
+    case EGameStatus::WIN:    type = EDialogType::WIN;   break;
+    default: return;
+    }
+
+    this->dialog = CreateDialog(this->dialogMesh, type);
+    this->dialogShown = true;
+    this->entities.push_back(&this->dialog);
+}
+
+void CGame::removeDialog() {
+    this->dialogShown = false;
+    this->entities.pop_back();
 }
