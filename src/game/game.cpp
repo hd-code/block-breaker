@@ -68,9 +68,9 @@ void CGame::onUpdate(EKey key) {
     case EGameStatus::WIN:
     case EGameStatus::LOSS:
         if (key == EKey::SPACE) {
+            this->removeDialog();
             this->initGame();
             this->status = EGameStatus::ON;
-            this->removeDialog();
         }
         break;
     }
@@ -103,7 +103,9 @@ void CGame::handleCollisions() {
 }
 
 void CGame::initGame() {
-    this->ball = CreateBall(ballMesh);
+    this->entities.clear();
+
+    this->ball = SBall(ballMesh);
     this->entities.push_back(&this->ball);
 
     this->paddle = CreatePaddle(paddleMesh);
@@ -141,7 +143,7 @@ void CGame::showDialog() {
     case EGameStatus::PAUSED: type = EDialogType::PAUSE; break;
     case EGameStatus::LOSS:   type = EDialogType::LOSS;  break;
     case EGameStatus::WIN:    type = EDialogType::WIN;   break;
-    default: return;
+    default: this->removeDialog(); return;
     }
 
     this->dialog = CreateDialog(this->dialogMesh, type);
@@ -150,6 +152,8 @@ void CGame::showDialog() {
 }
 
 void CGame::removeDialog() {
-    this->dialogShown = false;
-    this->entities.pop_back();
+    if (this->dialogShown) {
+        this->dialogShown = false;
+        this->entities.pop_back();
+    }
 }

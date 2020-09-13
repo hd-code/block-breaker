@@ -50,7 +50,7 @@ const float SIZE[] = { 5.0f, 2.0f, 0.1f };
 
 const float ANI_POSITION[] = { 0.0f, 0.0f, -3.0f };
 const float ANI_SCALE = 0.0f;
-const unsigned int ANI_FRAMES = 20;
+const unsigned int ANI_FRAMES = 10;
 
 ETexture getDialogTexture(EDialogType type) {
     switch (type) {

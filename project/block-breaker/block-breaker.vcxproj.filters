@@ -11,6 +11,7 @@
     <ClCompile Include="..\..\src\helper\material.cpp" />
     <ClCompile Include="..\..\src\helper\math.cpp" />
     <ClCompile Include="..\..\src\helper\mesh.cpp" />
+    <ClCompile Include="..\..\src\entity\dialog.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\src\app.hpp" />
@@ -25,5 +26,7 @@
     <ClInclude Include="..\..\src\helper\material.hpp" />
     <ClInclude Include="..\..\src\helper\math.hpp" />
     <ClInclude Include="..\..\src\helper\mesh.hpp" />
+    <ClInclude Include="..\..\src\light.hpp" />
+    <ClInclude Include="..\..\src\entity\dialog.hpp" />
   </ItemGroup>
 </Project>

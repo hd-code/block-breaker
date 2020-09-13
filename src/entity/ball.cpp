@@ -133,38 +133,37 @@ const float SPEC_EXP   = 80.0f;
 const float POSITION[] = { 0.0f, 0.0f, 0.0f };
 
 const float RADIUS = 0.3f;
-const float SPEED = 0.14f;
+const float SPEED = 0.15f;
 
 const float DIRECTION[] = { 0.0f, -1.0f, 0.0f };
-const float DIR_MIN_X = 0.2f;
-const float DIR_MAX_X = 0.5f;
+const float DIR_MIN_X = 0.1f;
+const float DIR_MAX_X = 0.3f;
 
-SBall CreateBall(gfx::BHandle* ballMesh) {
-    SBall ball;
-    ball.mesh = ballMesh;
-    ball.texture = TEXTURE;
-    ball.specularExponent = SPEC_EXP;
+SBall::SBall() {}
 
-    ball.position[0] = POSITION[0];
-    ball.position[1] = POSITION[1];
-    ball.position[2] = POSITION[2];
+SBall::SBall(gfx::BHandle* ballMesh) {
+    this->mesh = ballMesh;
+    this->texture = TEXTURE;
+    this->specularExponent = SPEC_EXP;
 
-    ball.radius = RADIUS;
-    ball.speed  = SPEED;
+    this->position[0] = POSITION[0];
+    this->position[1] = POSITION[1];
+    this->position[2] = POSITION[2];
+
+    this->radius = RADIUS;
+    this->speed  = SPEED;
 
     // ball will always start with a slight random angle
-    ball.direction[0] = GetRandom(DIR_MIN_X, DIR_MAX_X);
+    this->direction[0] = GetRandom(DIR_MIN_X, DIR_MAX_X);
     if (GetRandom() < 0.5f) {
-        ball.direction[0] *= -1.0f;
+        this->direction[0] *= -1.0f;
     }
-    ball.direction[1] = -1.0f;
-    ball.direction[2] = 0.0f;
+    this->direction[1] = -1.0f;
+    this->direction[2] = 0.0f;
 
-    gfx::GetNormalizedVector(ball.direction, ball.direction);
+    gfx::GetNormalizedVector(this->direction, this->direction);
 
-    ball.updateWorldMatrix();
-
-    return ball;
+    this->updateWorldMatrix();
 }
 
 // --- Mesh --------------------------------------------------------------------

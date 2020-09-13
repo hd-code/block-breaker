@@ -25,17 +25,29 @@ enum class ETexture {
     LENGTH // number of textures
 };
 
+static const char* TEXTURES[] = {
+    "ball.png",
+    "paddle.jpg",
+    "bed-rock.jpg",
+    "block.jpg",
+    "block-hard.jpg",
+    "block-cracked.jpg",
+    "dialog-start.png",
+    "dialog-pause.png",
+    "dialog-lost.png",
+    "dialog-won.png",
+};
+
 // -----------------------------------------------------------------------------
 
 const int FLOATS_IN_VERTEX = 8; // postion 3, normal 3, texture 2
 
-// const int NUM_OF_INPUTS = 3;
-
-// gfx::SInputElement INPUT_ELEMENTS[] = {
-//     "POSITION", gfx::SInputElement::Float3,
-//     "NORMAL",   gfx::SInputElement::Float3,
-//     "TEXCOORD", gfx::SInputElement::Float2,
-// };
+const int NUM_OF_INPUTS = 3;
+static gfx::SInputElement INPUT_ELEMENTS[] = {
+    "POSITION", gfx::SInputElement::Float3,
+    "NORMAL",   gfx::SInputElement::Float3,
+    "TEXCOORD", gfx::SInputElement::Float2,
+};
 
 // -----------------------------------------------------------------------------
 

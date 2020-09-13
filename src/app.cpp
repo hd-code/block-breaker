@@ -10,6 +10,8 @@
 #include "light.hpp"
 #include "yoshix.h"
 
+#include <string>
+
 // -----------------------------------------------------------------------------
 
 CApplication::CApplication() :
@@ -52,22 +54,11 @@ bool CApplication::InternOnShutdown() {
 // -----------------------------------------------------------------------------
 
 bool CApplication::InternOnCreateTextures() {
-    int numOfTextures = int(ETexture::LENGTH);
-    const char* TEXTURES[] = {
-        "..\\data\\ball.png",
-        "..\\data\\paddle.jpg",
-        "..\\data\\bed-rock.jpg",
-        "..\\data\\block.jpg",
-        "..\\data\\block-hard.jpg",
-        "..\\data\\block-cracked.jpg",
-        "..\\data\\dialog-start.jpg",
-        "..\\data\\dialog-pause.jpg",
-        "..\\data\\dialog-lost.jpg",
-        "..\\data\\dialog-won.jpg",
-    };
+    std::string dataDir = "..\\data\\";
 
-    for (int i = 0; i < numOfTextures; i++) {
-        gfx::CreateTexture(TEXTURES[i], &this->textures[i]);
+    for (int i = 0; i < int(ETexture::LENGTH); i++) {
+        std::string file = dataDir + TEXTURES[i];
+        gfx::CreateTexture(file.c_str(), &this->textures[i]);
     }
 
     return true;
@@ -146,13 +137,6 @@ bool CApplication::InternOnCreateMaterials() {
     gfx::BHandle vsBuffers[2] = { this->generalVSBuffer, this->entityVSBuffer };
     gfx::BHandle psBuffers[2] = { this->generalPSBuffer, this->entityPSBuffer };
 
-    const int NUM_OF_INPUTS = 3;
-    gfx::SInputElement INPUT_ELEMENTS[] = {
-        "POSITION", gfx::SInputElement::Float3,
-        "NORMAL",   gfx::SInputElement::Float3,
-        "TEXCOORD", gfx::SInputElement::Float2,
-    };
-
     this->material = CreateMaterial(
         int(ETexture::LENGTH), this->textures,
         2, vsBuffers,
@@ -184,6 +168,7 @@ bool CApplication::InternOnCreateMeshes() {
 bool CApplication::InternOnReleaseMeshes() {
     gfx::ReleaseMesh(this->ballMesh);
     gfx::ReleaseMesh(this->blockMesh);
+    gfx::ReleaseMesh(this->dialogMesh);
     gfx::ReleaseMesh(this->paddleMesh);
 
     return true;

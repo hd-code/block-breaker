@@ -12,6 +12,9 @@ struct SBall : SEntity {
     float radius;
     float speed;
 
+    SBall();
+    SBall(gfx::BHandle* ballMesh);
+
     bool handleCollision(float topBorder, float leftBorder, float rightBorder);
     bool handleCollision(SBlock &block);
     bool handleCollision(const SPaddle &paddle);
@@ -25,10 +28,6 @@ private:
 
     void changeDirection(ECollisionAt collisionAt);
 };
-
-// -----------------------------------------------------------------------------
-
-SBall CreateBall(gfx::BHandle* ballMesh);
 
 // -----------------------------------------------------------------------------
 
