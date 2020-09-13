@@ -1,28 +1,104 @@
 #include "ball.hpp"
 
+#include "../helper/math.hpp"
+#include "../helper/mesh.hpp"
+#include "yoshix.h"
+
 #include <cmath>
 #include <vector>
 
 // -----------------------------------------------------------------------------
 
-void SBall::move() {
-    this->position[0] += this->speed * this->direction[0];
-    this->position[1] += this->speed * this->direction[1];
-    this->position[2] += this->speed * this->direction[2];
+const ETexture TEXTURE = ETexture::BALL;
+const float SPEC_EXP   = 80.0f;
+const float POSITION[] = { 0.0f, 0.0f, 0.0f };
+
+const float RADIUS = 0.3f;
+const float SPEED = 0.15f;
+
+const float DIRECTION[] = { 0.0f, -1.0f, 0.0f };
+const float DIR_MIN_X = 0.1f;
+const float DIR_MAX_X = 0.3f;
+
+SBall::SBall() {}
+
+SBall::SBall(gfx::BHandle* ballMesh) {
+    this->mesh = ballMesh;
+    this->texture = TEXTURE;
+    this->specularExponent = SPEC_EXP;
+
+    this->position[0] = POSITION[0];
+    this->position[1] = POSITION[1];
+    this->position[2] = POSITION[2];
+
+    this->radius = RADIUS;
+    this->speed  = SPEED;
+
+    // ball will always start with a slight random angle
+    this->direction[0] = GetRandom(DIR_MIN_X, DIR_MAX_X);
+    if (GetRandom() < 0.5f) {
+        this->direction[0] *= -1.0f;
+    }
+    this->direction[1] = -1.0f;
+    this->direction[2] = 0.0f;
+
+    gfx::GetNormalizedVector(this->direction, this->direction);
 
     this->updateWorldMatrix();
+}
+
+// -----------------------------------------------------------------------------
+
+const float WEIGHT_OF_PADDLE_ANGLE = 0.8f;
+
+bool SBall::handleCollision(float topBorder, float leftBorder, float rightBorder) {
+    if (topBorder < this->position[1] + this->radius) {
+        this->changeDirection(ECollisionAt::TOP);
+        return true;
+    }
+
+    if (leftBorder > this->position[0] - this->radius) {
+        this->changeDirection(ECollisionAt::LEFT);
+        return true;
+    }
+
+    if (rightBorder < this->position[0] + this->radius) {
+        this->changeDirection(ECollisionAt::RIGHT);
+        return true;
+    }
+
+    return false;
 }
 
 bool SBall::handleCollision(SBlock &block) {
     float xDiff = std::fabs(this->position[0] - block.position[0]);
     float yDiff = std::fabs(this->position[1] - block.position[1]);
 
-    xDiff -= this->radius - block.size;
-    yDiff -= this->radius - block.size;
+    float offset = this->radius + (block.size / 2.0f);
+
+    xDiff -= offset;
+    yDiff -= offset;
 
     // collision
     if (xDiff <= 0 && yDiff <= 0) {
-        this->changeDirection(xDiff > yDiff);
+        ECollisionAt collAt;
+        if (xDiff > yDiff) { // horizontal collision
+            if (this->position[0] < block.position[0]) {
+                collAt = ECollisionAt::RIGHT;
+            } else {
+                collAt = ECollisionAt::LEFT;
+            }
+        } else { // vertical collision
+            if (this->position[1] < block.position[1]) {
+                collAt = ECollisionAt::TOP;
+            } else {
+                collAt = ECollisionAt::BOTTOM;
+            }
+        }
+
+        this->changeDirection(collAt);
+        block.onCollision();
+
         return true;
     }
 
@@ -30,15 +106,20 @@ bool SBall::handleCollision(SBlock &block) {
 }
 
 bool SBall::handleCollision(const SPaddle &paddle) {
-    float xDiff = std::fabs(this->position[0] - paddle.position[0]);
-    float yDiff = std::fabs(this->position[1] - paddle.position[1]);
+    if (this->position[1] - this->radius > paddle.position[1] + paddle.height / 2.0f) {
+        return false;
+    }
 
-    xDiff -= this->radius - paddle.width;
-    yDiff -= this->radius - paddle.height;
+    float xDiff = this->position[0] - paddle.position[0];
+    float xOffset = this->radius + (paddle.width  / 2.0f);
 
-    // collision
-    if (xDiff <= 0 && yDiff <= 0) {
-        this->changeDirection(xDiff > yDiff);
+    if (std::fabs(xDiff) < xOffset) { // collision
+        this->changeDirection(ECollisionAt::BOTTOM); // deflect ball upwards
+
+        float xDirection = xDiff / xOffset;
+        this->direction[0] += WEIGHT_OF_PADDLE_ANGLE * (xDirection - this->direction[0]);
+        gfx::GetNormalizedVector(this->direction, this->direction);
+
         return true;
     }
 
@@ -49,36 +130,42 @@ bool SBall::isOnGround(float groundLevel) {
     return groundLevel > this->position[1];
 }
 
-void SBall::changeDirection(bool horizontalCollision) {
-    if (horizontalCollision) {
-        this->direction[0] *= -1.0f; // flip x direction
-    } else {
-        this->direction[1] *= -1.0f; // flip y direction
-    }
+void SBall::move() {
+    this->position[0] += this->speed * this->direction[0];
+    this->position[1] += this->speed * this->direction[1];
+    this->position[2] += this->speed * this->direction[2];
+
+    this->updateWorldMatrix();
 }
 
 // -----------------------------------------------------------------------------
 
-const float RADIUS = 0.5f;
-const float SPEED = 0.01f;
+void SBall::changeDirection(ECollisionAt collisionAt) {
+    switch (collisionAt) {
+        case ECollisionAt::TOP:
+            if (this->direction[1] > 0) {
+                this->direction[1] *= -1.0f;
+            }
+            break;
 
-SBall createBall(gfx::BHandle* ballMesh) {
-    SBall ball;
+        case ECollisionAt::BOTTOM:
+            if (this->direction[1] < 0) {
+                this->direction[1] *= -1.0f;
+            }
+            break;
 
-    ball.mesh = ballMesh;
-    ball.texture = ETexture::BALL;
+        case ECollisionAt::LEFT:
+            if (this->direction[0] < 0) {
+                this->direction[0] *= -1.0f;
+            }
+            break;
 
-    ball.position[0] = 0.0f;
-    ball.position[1] = 0.0f;
-    ball.position[2] = 0.0f;
-
-    ball.direction[1] = -1.0f;
-    ball.direction[2] = 0.0f;
-
-    ball.radius = RADIUS;
-    ball.speed  = SPEED;
-
-    return ball;
+        case ECollisionAt::RIGHT:
+            if (this->direction[0] > 0) {
+                this->direction[0] *= -1.0f;
+            }
+            break;
+    }
 }
 
 // --- Mesh --------------------------------------------------------------------
@@ -154,7 +241,7 @@ void subdivideTriangle(std::vector<SVertex> &verts, std::vector<STriangle> &tria
 void subdivideTriangles(std::vector<SVertex> &verts, std::vector<STriangle> &triangles) {
     int numOfTriangles = triangles.size();
     for (int i = 0; i < numOfTriangles; i++) {
-        subdivideTriangle(verts, triangles, 0); // original triangle is delted and new ones are appended
+        subdivideTriangle(verts, triangles, 0); // original triangle is deleted and new ones are appended
     }
 }
 
@@ -184,7 +271,7 @@ int* toTriangleArray(std::vector<STriangle> triangles, int tmpArray[], int numOf
     for (int i = 0; i < numOfTriangles; i++) {
         STriangle triangle = triangles[i];
 
-        int index = i * INTS_IN_TRIANGLE;
+        int index = i * INDICES_PER_TRIANGLE;
         tmpArray[index + 0] = triangle.indices[0];
         tmpArray[index + 1] = triangle.indices[1];
         tmpArray[index + 2] = triangle.indices[2];
@@ -192,7 +279,7 @@ int* toTriangleArray(std::vector<STriangle> triangles, int tmpArray[], int numOf
     return &tmpArray[0];
 }
 
-gfx::BHandle createBallMesh(gfx::BHandle &material) {
+gfx::BHandle CreateBallMesh(gfx::BHandle &material) {
     std::vector<SVertex> verts;
     // top verts
     verts.push_back({ 0.0f, 1.0f, 0.0f,   0.000f, 0.0f}); // 0
@@ -225,15 +312,14 @@ gfx::BHandle createBallMesh(gfx::BHandle &material) {
 
     subdivideTriangles(verts, triangles);
     subdivideTriangles(verts, triangles);
-    subdivideTriangles(verts, triangles);
 
     int numOfVerts = verts.size();
     float *tmpVerts = new float[numOfVerts * FLOATS_IN_VERTEX];
 
     int numOfTri = triangles.size();
-    int *tmpTri = new int[numOfTri * INTS_IN_TRIANGLE];
+    int *tmpTri = new int[numOfTri * INDICES_PER_TRIANGLE];
 
-    gfx::BHandle mesh = createMesh(
+    gfx::BHandle mesh = CreateMesh(
         numOfVerts, toVertexArray(verts, tmpVerts, numOfVerts),
         numOfTri, toTriangleArray(triangles, tmpTri, numOfTri),
         material

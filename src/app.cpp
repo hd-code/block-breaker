@@ -1,15 +1,15 @@
 #include "app.hpp"
 
 #include "camera.hpp"
-#include "entities/ball.hpp"
-#include "entities/block.hpp"
-#include "entities/entity.hpp"
-#include "entities/paddle.hpp"
+#include "entity/ball.hpp"
+#include "entity/block.hpp"
+#include "entity/dialog.hpp"
+#include "entity/paddle.hpp"
+#include "helper/material.hpp"
+#include "light.hpp"
 #include "yoshix.h"
 
-#include <iostream>
-
-using namespace gfx;
+#include <string>
 
 // -----------------------------------------------------------------------------
 
@@ -29,6 +29,7 @@ CApplication::CApplication() :
     // Meshes
     , ballMesh(nullptr)
     , blockMesh(nullptr)
+    , dialogMesh(nullptr)
     , paddleMesh(nullptr)
     // Game
     , game(nullptr)
@@ -40,7 +41,7 @@ CApplication::~CApplication() {}
 // -----------------------------------------------------------------------------
 
 bool CApplication::InternOnStartup() {
-    this->game = new CGame(&this->ballMesh, &this->blockMesh, &this->paddleMesh);
+    this->game = new CGame(&this->ballMesh, &this->blockMesh, &this->dialogMesh, &this->paddleMesh);
     return true;
 }
 
@@ -52,19 +53,19 @@ bool CApplication::InternOnShutdown() {
 // -----------------------------------------------------------------------------
 
 bool CApplication::InternOnCreateTextures() {
-    CreateTexture("..\\data\\ball.png", &this->textures[0]);
-    CreateTexture("..\\data\\paddle.jpg", &this->textures[1]);
-    CreateTexture("..\\data\\bed-rock.jpg", &this->textures[2]);
-    CreateTexture("..\\data\\paddle.jpg", &this->textures[3]);
-    CreateTexture("..\\data\\block-hard.jpg", &this->textures[4]);
-    CreateTexture("..\\data\\block-cracked.jpg", &this->textures[5]);
+    std::string dataDir = "..\\data\\";
+
+    for (int i = 0; i < int(ETexture::LENGTH); i++) {
+        std::string file = dataDir + TEXTURE_FILES[i];
+        gfx::CreateTexture(file.c_str(), &this->textures[i]);
+    }
 
     return true;
 }
 
 bool CApplication::InternOnReleaseTextures() {
-    for (int i = 0; i < NUM_OF_TEXTURES; i++) {
-        ReleaseTexture(this->textures[i]);
+    for (int i = 0; i < int(ETexture::LENGTH); i++) {
+        gfx::ReleaseTexture(this->textures[i]);
     }
 
     return true;
@@ -91,23 +92,24 @@ struct SEntityVSBuffer {
 
 struct SEntityPSBuffer {
     float texture;
-    float _padding[3];
+    float specularExponent;
+    float _padding[2];
 };
 
 bool CApplication::InternOnCreateConstantBuffers() {
-    CreateConstantBuffer(sizeof(SGeneralVSBuffer), &this->generalVSBuffer);
-    CreateConstantBuffer(sizeof(SGeneralPSBuffer), &this->generalPSBuffer);
-    CreateConstantBuffer(sizeof(SEntityVSBuffer), &this->entityVSBuffer);
-    CreateConstantBuffer(sizeof(SEntityPSBuffer), &this->entityPSBuffer);
+    gfx::CreateConstantBuffer(sizeof(SGeneralVSBuffer), &this->generalVSBuffer);
+    gfx::CreateConstantBuffer(sizeof(SGeneralPSBuffer), &this->generalPSBuffer);
+    gfx::CreateConstantBuffer(sizeof(SEntityVSBuffer), &this->entityVSBuffer);
+    gfx::CreateConstantBuffer(sizeof(SEntityPSBuffer), &this->entityPSBuffer);
 
     return true; 
 }
 
 bool CApplication::InternOnReleaseConstantBuffers() {
-    ReleaseConstantBuffer(this->generalVSBuffer);
-    ReleaseConstantBuffer(this->generalPSBuffer);
-    ReleaseConstantBuffer(this->entityVSBuffer);
-    ReleaseConstantBuffer(this->entityPSBuffer);
+    gfx::ReleaseConstantBuffer(this->generalVSBuffer);
+    gfx::ReleaseConstantBuffer(this->generalPSBuffer);
+    gfx::ReleaseConstantBuffer(this->entityVSBuffer);
+    gfx::ReleaseConstantBuffer(this->entityPSBuffer);
 
     return true;
 }
@@ -115,15 +117,15 @@ bool CApplication::InternOnReleaseConstantBuffers() {
 // -----------------------------------------------------------------------------
 
 bool CApplication::InternOnCreateShader() {
-    CreateVertexShader("..\\src\\shader.fx", "VShader", &this->vertexShader);
-    CreatePixelShader ("..\\src\\shader.fx", "PShader", &this->pixelShader);
+    gfx::CreateVertexShader("..\\src\\shader.fx", "VShader", &this->vertexShader);
+    gfx::CreatePixelShader ("..\\src\\shader.fx", "PShader", &this->pixelShader);
 
     return true;
 }
 
 bool CApplication::InternOnReleaseShader() {
-    ReleaseVertexShader(this->vertexShader);
-    ReleasePixelShader (this->pixelShader);
+    gfx::ReleaseVertexShader(this->vertexShader);
+    gfx::ReleasePixelShader (this->pixelShader);
 
     return true;
 }
@@ -131,13 +133,14 @@ bool CApplication::InternOnReleaseShader() {
 // -----------------------------------------------------------------------------
 
 bool CApplication::InternOnCreateMaterials() {
-    BHandle vsBuffers[2] = { this->generalVSBuffer, this->entityVSBuffer };
-    BHandle psBuffers[2] = { this->generalPSBuffer, this->entityPSBuffer };
+    gfx::BHandle vsBuffers[2] = { this->generalVSBuffer, this->entityVSBuffer };
+    gfx::BHandle psBuffers[2] = { this->generalPSBuffer, this->entityPSBuffer };
 
-    this->material = createMaterial(
-        NUM_OF_TEXTURES, this->textures,
+    this->material = CreateMaterial(
+        int(ETexture::LENGTH), this->textures,
         2, vsBuffers,
         2, psBuffers,
+        NUM_OF_INPUTS, INPUT_ELEMENTS,
         this->vertexShader, this->pixelShader
     );
 
@@ -145,7 +148,7 @@ bool CApplication::InternOnCreateMaterials() {
 }
 
 bool CApplication::InternOnReleaseMaterials() {
-    ReleaseMaterial(this->material);
+    gfx::ReleaseMaterial(this->material);
 
     return true;
 }
@@ -153,17 +156,19 @@ bool CApplication::InternOnReleaseMaterials() {
 // -----------------------------------------------------------------------------
 
 bool CApplication::InternOnCreateMeshes() {
-    this->ballMesh   = createBallMesh(this->material);
-    this->blockMesh  = createBlockMesh(this->material);
-    this->paddleMesh = createPaddleMesh(this->material);
+    this->ballMesh   = CreateBallMesh(this->material);
+    this->blockMesh  = CreateBlockMesh(this->material);
+    this->dialogMesh = CreateDialogMesh(this->material);
+    this->paddleMesh = CreatePaddleMesh(this->material);
 
     return true;
 }
 
 bool CApplication::InternOnReleaseMeshes() {
-    ReleaseMesh(this->ballMesh);
-    ReleaseMesh(this->blockMesh);
-    ReleaseMesh(this->paddleMesh);
+    gfx::ReleaseMesh(this->ballMesh);
+    gfx::ReleaseMesh(this->blockMesh);
+    gfx::ReleaseMesh(this->dialogMesh);
+    gfx::ReleaseMesh(this->paddleMesh);
 
     return true;
 }
@@ -175,21 +180,21 @@ bool CApplication::InternOnResize(int width, int height) {
     SLight light;
 
     float viewMatrix[16];
-    GetViewMatrix(cam.position, cam.target, cam.up, viewMatrix);
+    gfx::GetViewMatrix(cam.position, cam.target, cam.up, viewMatrix);
 
     float projectionMatrix[16];
     float aspectRatio = (float) width / (float) height;
-    GetProjectionMatrix(cam.aperture, aspectRatio, cam.nearClip, cam.farClip, projectionMatrix);
+    gfx::GetProjectionMatrix(cam.aperture, aspectRatio, cam.nearClip, cam.farClip, projectionMatrix);
 
     SGeneralVSBuffer vsBuffer;
-    MulMatrix(viewMatrix, projectionMatrix, vsBuffer.viewProjectionMatrix);
-    UploadConstantBuffer(&vsBuffer, this->generalVSBuffer);
+    gfx::MulMatrix(viewMatrix, projectionMatrix, vsBuffer.viewProjectionMatrix);
+    gfx::UploadConstantBuffer(&vsBuffer, this->generalVSBuffer);
 
     SGeneralPSBuffer psBuffer;
     memcpy(psBuffer.cameraPosition, cam.position, sizeof(float)*3);
-    GetNormalizedVector(light.direction, psBuffer.lightDir);
+    gfx::GetNormalizedVector(light.direction, psBuffer.lightDir);
     memcpy(psBuffer.ambientLight, light.ambient, sizeof(float)*3);
-    UploadConstantBuffer(&psBuffer, this->generalPSBuffer);
+    gfx::UploadConstantBuffer(&psBuffer, this->generalPSBuffer);
 
     return true;
 }
@@ -198,23 +203,23 @@ bool CApplication::InternOnResize(int width, int height) {
 
 bool CApplication::InternOnKeyEvent(unsigned int key, bool isDown, bool altDown) {
     switch (key) {
-    case KEY_SPACE:
-        if (!isDown) { // trigger only when key was released
-            this->key = EKey::SPACE;
-            return true;
-        }
-        break;
+        case KEY_SPACE:
+            if (!isDown) { // trigger only once when key was released
+                this->key = EKey::SPACE;
+                return true;
+            }
+            break;
 
-    case KEY_LEFT:
-        this->key = EKey::LEFT;
-        break;
+        case KEY_LEFT:
+            this->key = EKey::LEFT;
+            break;
 
-    case KEY_RIGHT:
-        this->key = EKey::RIGHT;
-        break;
+        case KEY_RIGHT:
+            this->key = EKey::RIGHT;
+            break;
 
-    default:
-        this->key = EKey::NONE;
+        default:
+            this->key = EKey::NONE;
     }
 
     if (!isDown) {
@@ -226,9 +231,11 @@ bool CApplication::InternOnKeyEvent(unsigned int key, bool isDown, bool altDown)
 
 bool CApplication::InternOnUpdate() {
     this->game->onUpdate(this->key);
+
     if (this->key == EKey::SPACE) {
         this->key = EKey::NONE;
     }
+    
     return true;
 }
 
@@ -243,11 +250,12 @@ bool CApplication::InternOnFrame() {
     for (auto entity : *entities) {
         memcpy(vsBuffer.worldMatrix, entity->worldMatrix, sizeof(float)*16);
         psBuffer.texture = float(entity->texture);
+        psBuffer.specularExponent = entity->specularExponent;
 
-        UploadConstantBuffer(&vsBuffer, this->entityVSBuffer);
-        UploadConstantBuffer(&psBuffer, this->entityPSBuffer);
+        gfx::UploadConstantBuffer(&vsBuffer, this->entityVSBuffer);
+        gfx::UploadConstantBuffer(&psBuffer, this->entityPSBuffer);
 
-        DrawMesh(*entity->mesh);
+        gfx::DrawMesh(*entity->mesh);
     }
 
     return true;

@@ -1,10 +1,11 @@
 #pragma once
 
 #include "data.hpp"
-#include "../entities/ball.hpp"
-#include "../entities/block.hpp"
-#include "../entities/entity.hpp"
-#include "../entities/paddle.hpp"
+#include "../entity/ball.hpp"
+#include "../entity/block.hpp"
+#include "../entity/dialog.hpp"
+#include "../entity/entity.hpp"
+#include "../entity/paddle.hpp"
 #include "../key.hpp"
 #include "yoshix.h"
 
@@ -12,11 +13,11 @@
 
 // -----------------------------------------------------------------------------
 
-enum class EGameStatus { PAUSED, ON, WIN, LOST };
+enum class EGameStatus { START, ON, PAUSED, WON, LOST };
 
 class CGame {
 public:
-    CGame(gfx::BHandle* ballMesh, gfx::BHandle* blockMesh, gfx::BHandle* paddleMesh);
+    CGame(gfx::BHandle* ballMesh, gfx::BHandle* blockMesh, gfx::BHandle* dialogMesh, gfx::BHandle* paddleMesh);
     ~CGame();
 
     std::vector<SEntity*>* getEntities();
@@ -26,19 +27,32 @@ private:
     void advanceGame(EKey key);
 
     void handleCollisions();
+    
+    void initGame();
 
     bool isLoss();
     bool isWin();
+
+    void showDialog();
+    void removeDialog();
 
 private:
     EGameStatus status;
 
     SBall ball;
     SPaddle paddle;
-    SBlock bedRocks[NUM_OF_BED_ROCKS];
-    SBlock blocks[NUM_OF_BLOCKS];
 
-    unsigned int startOfBlocks;
+    bool dialogShown;
+    SDialog dialog;
+
+    SBlock bedRocks[NUM_OF_BED_ROCKS]; // just used to visualize the borders
+    SBlock blocks[NUM_OF_BLOCKS]; // the actual blocks in the game
+    unsigned int startOfBlocks; // index in entities, where the blocks start
 
     std::vector<SEntity*> entities;
+
+    gfx::BHandle* ballMesh;
+    gfx::BHandle* blockMesh;
+    gfx::BHandle* dialogMesh;
+    gfx::BHandle* paddleMesh;
 };

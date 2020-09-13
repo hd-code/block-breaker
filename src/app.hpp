@@ -1,43 +1,41 @@
 #pragma once
 
-#include "entities/entity.hpp"
+#include "entity/entity.hpp"
 #include "game/game.hpp"
 #include "key.hpp"
 #include "yoshix.h"
 
 #include <vector>
 
-using namespace gfx;
-
 // -----------------------------------------------------------------------------
 
-class CApplication : public IApplication {
+class CApplication : public gfx::IApplication {
     public:
         CApplication();
         virtual ~CApplication();
 
     private:
         // Textures
-        const static int NUM_OF_TEXTURES = 6;
-        BHandle textures[NUM_OF_TEXTURES];
+        gfx::BHandle textures[int(ETexture::LENGTH)];
 
         // Constant Buffers
-        BHandle generalVSBuffer;
-        BHandle generalPSBuffer;
-        BHandle entityVSBuffer;
-        BHandle entityPSBuffer;
+        gfx::BHandle generalVSBuffer;
+        gfx::BHandle generalPSBuffer;
+        gfx::BHandle entityVSBuffer;
+        gfx::BHandle entityPSBuffer;
 
         // Shaders
-        BHandle vertexShader;
-        BHandle pixelShader;
+        gfx::BHandle vertexShader;
+        gfx::BHandle pixelShader;
 
         // Materials
-        BHandle material;
+        gfx::BHandle material;
 
         // Meshes
-        BHandle ballMesh;
-        BHandle blockMesh;
-        BHandle paddleMesh;
+        gfx::BHandle ballMesh;
+        gfx::BHandle blockMesh;
+        gfx::BHandle dialogMesh;
+        gfx::BHandle paddleMesh;
 
         // Game
         CGame* game;
@@ -56,7 +54,7 @@ class CApplication : public IApplication {
         virtual bool InternOnReleaseMaterials();
         virtual bool InternOnCreateMeshes();
         virtual bool InternOnReleaseMeshes();
-        virtual bool InternOnResize(int _Width, int _Height);
+        virtual bool InternOnResize(int width, int height);
         virtual bool InternOnKeyEvent(unsigned int key, bool isDown, bool altDown);
         virtual bool InternOnUpdate();
         virtual bool InternOnFrame();

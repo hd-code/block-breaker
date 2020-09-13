@@ -8,6 +8,10 @@ Texture2D Tex2 : register(t2);
 Texture2D Tex3 : register(t3);
 Texture2D Tex4 : register(t4);
 Texture2D Tex5 : register(t5);
+Texture2D Tex6 : register(t6);
+Texture2D Tex7 : register(t7);
+Texture2D Tex8 : register(t8);
+Texture2D Tex9 : register(t9);
 
 // --- Constant Buffers --------------------------------------------------------
 
@@ -27,6 +31,7 @@ cbuffer PSBuffer : register(b0) {
 
 cbuffer PSBuffer : register(b1) {
     float TextureIndex;
+    float SpecularExponent;
 }
 
 // --- Data Types --------------------------------------------------------------
@@ -65,9 +70,9 @@ float4 PShader(PSInput input) : SV_Target {
 
     float3 normal = normalize(input.normal);
 
-    float4 ambientLight  = float4(0.1f, 0.1f, 0.1f, 1.0f);
+    float4 ambientLight  = float4(AmbientLight, 1.0f);
 	float4 diffuseLight  = max(dot(normal, lightVec), 0.0f);
-    float4 specularLight = pow(max(dot(normal, halfVec), 0.0f), 110.0f);
+    float4 specularLight = pow(max(dot(normal, halfVec), 0.0f), SpecularExponent);
 	
     float4 light = ambientLight + diffuseLight + specularLight;
 
@@ -78,18 +83,10 @@ float4 PShader(PSInput input) : SV_Target {
         case 3: return Tex3.Sample(Sampler, input.texCoords) * light;
         case 4: return Tex4.Sample(Sampler, input.texCoords) * light;
         case 5: return Tex5.Sample(Sampler, input.texCoords) * light;
+        case 6: return Tex6.Sample(Sampler, input.texCoords) * light;
+        case 7: return Tex7.Sample(Sampler, input.texCoords) * light;
+        case 8: return Tex8.Sample(Sampler, input.texCoords) * light;
+        case 9: return Tex9.Sample(Sampler, input.texCoords) * light;
         default: return Tex0.Sample(Sampler, input.texCoords) * light;
     }
 }
-
-// Texture2D getTexture() {
-//     switch (TextureIndex) {
-//         case 0: return Tex0;
-//         case 1: return Tex1;
-//         case 2: return Tex2;
-//         case 3: return Tex3;
-//         case 4: return Tex4;
-//         case 5: return Tex5;
-//         default: return Tex0;
-//     }
-// }
