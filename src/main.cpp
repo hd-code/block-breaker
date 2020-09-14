@@ -7,7 +7,7 @@
 // -----------------------------------------------------------------------------
 
 void main() {
-    SetSeed(std::time(0));
+    SetSeed(unsigned int(std::time(0)));
 
     CApplication app;
     gfx::RunApplication(800, 600, "BlockBreaker HD", &app);
