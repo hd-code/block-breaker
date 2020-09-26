@@ -16,6 +16,12 @@ Das Projekt kann nur auf Windows mit Visual Studio gebaut und gestartet werden.
 
 Das VS-Projekt befindet sich in: `project/project.sln`.
 
+## Controls
+
+Das Spiel kann mit der `Leertaste` pausiert werden. Ebenso wird es damit fortgesetzt. Sobald ein Spiel gewonnen oder verloren ist, kann es ebenfalld mit der `Leertaste` erneut gespielt werden.
+
+Die Steuerung des Paddles erfolgt mit der `linken` bzw. `rechten Pfeiltaste`.
+
 ## Development
 
 Dieses Projekt liegt auf 2 Git-Repos gleichzeitig. Einmal auf Github und zusätzlich noch auf dem Git-Server der FH Erfurt. Damit ein Push immer auf beide Repos erfolgt, müssen beide als remotes registriert sein.
