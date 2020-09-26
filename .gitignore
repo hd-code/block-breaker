@@ -1,14 +1,13 @@
-build
-*.exe
+build/
 
 # macOS
 .DS_Store
 
 # Visual Studio
-.vs
+.vs/
 
 # Visual Studio Code
-.vscode
+.vscode/
 
 # Windows
 Thumbs.db
